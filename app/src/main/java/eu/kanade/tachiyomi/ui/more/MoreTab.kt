@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.history.HistoryTab
+import eu.kanade.tachiyomi.ui.libraryUpdateError.LibraryUpdateErrorScreen
 import eu.kanade.tachiyomi.ui.setting.SettingsScreen
 import eu.kanade.tachiyomi.ui.stats.StatsScreen
 import eu.kanade.tachiyomi.ui.updates.UpdatesTab
@@ -42,7 +43,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-object MoreTab : Tab {
+data object MoreTab : Tab {
     private fun readResolve(): Any = MoreTab
 
     override val options: TabOptions
@@ -89,6 +90,9 @@ object MoreTab : Tab {
             onClickUpdates = { navigator.push(UpdatesTab) },
             onClickHistory = { navigator.push(HistoryTab) },
             // SY <--
+            // KMK -->
+            onClickLibraryUpdateErrors = { navigator.push(LibraryUpdateErrorScreen()) },
+            // KMK <--
         )
     }
 }

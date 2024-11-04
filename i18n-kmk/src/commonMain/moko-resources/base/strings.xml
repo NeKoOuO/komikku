@@ -9,16 +9,19 @@
     <string name="action_faq_and_guides">FAQ and Guides</string>
     <string name="action_move_up">Move up</string>
     <string name="action_move_down">Move down</string>
-    <string name="action_move_bottom">Move bottom</string>
     <string name="action_confirm_color">Confirm Color</string>
     <string name="action_remove_merged">Remove merged entries?</string>
+    <string name="action_hide">Hide</string>
+    <string name="action_show_hidden_categories">Show hidden categories</string>
+    <string name="action_panorama_cover">Panorama cover</string>
 
 
     <!-- Preferences -->
       <!-- Appearance section -->
-    <string name="pref_details_page_theme">Details page</string>
+    <string name="pref_custom_theme_style">Custom theme style</string>
+    <string name="pref_manga_info">Manga Info</string>
     <string name="pref_theme_cover_based">Theme based on cover</string>
-    <string name="pref_theme_cover_based_style">Theme style</string>
+    <string name="pref_theme_cover_based_style">Cover based theme style</string>
     <string name="pref_theme_cover_based_style_tonalspot">Tonal Spot</string>
     <string name="pref_theme_cover_based_style_neutral">Neutral</string>
     <string name="pref_theme_cover_based_style_vibrant">Vibrant</string>
@@ -28,6 +31,11 @@
     <string name="pref_theme_cover_based_style_monochrome">Monochrome</string>
     <string name="pref_theme_cover_based_style_fidelity">Fidelity</string>
     <string name="pref_theme_cover_based_style_content">Content</string>
+    <string name="pref_panorama_cover">Panorama Cover</string>
+    <string name="pref_panorama_cover_summary">Show cover in landscape mode if it\'s a wide image</string>
+    <string name="pref_panorama_cover_flow">Panorama Cover Flow</string>
+    <string name="pref_panorama_cover_flow_summary">Show panorama cover in Global Search &amp; Suggestions</string>
+    <string name="action_display_comfortable_grid_panorama">Panorama comfortable grid</string>
     <string name="pref_expand_related_mangas">Expand Suggestions</string>
     <string name="pref_expand_related_mangas_summary">If turned off, Suggestions won\'t automatically load &amp; show expanded</string>
     <string name="put_related_mangas_in_overflow">Suggestions in overflow</string>
@@ -43,8 +51,21 @@
 
     <!-- Custom Color Picker -->
     <string name="pref_custom_color">Palette Personalizer</string>
-    <string name="custom_color_description">Pick a color for the custom Theme</string>
+    <string name="custom_color_description">Pick a seed color for the custom Theme</string>
     <string name="theme_custom">Custom Theme</string>
+    <string name="custom_theme_palette_casual">Casual</string>
+    <string name="custom_theme_palette_sunset">Sunset</string>
+    <string name="custom_theme_palette_outrun">Outrun</string>
+    <string name="custom_theme_palette_raspberry">Raspberry</string>
+    <string name="custom_theme_palette_pop">Pop</string>
+    <string name="custom_theme_palette_cathode">Cathode</string>
+    <string name="custom_theme_palette_bubblegum">Bubblegum</string>
+    <string name="custom_theme_palette_night_at_the_beach">Night at the beach</string>
+    <string name="custom_theme_palette_spectral">Spectral</string>
+    <string name="custom_theme_palette_patagonia">Patagonia</string>
+    <string name="custom_theme_palette_springfield">Springfield</string>
+    <string name="custom_theme_palette_lcd">LCD</string>
+    <string name="custom_theme_palette_pico">PICO-8</string>
 
     <!-- Library section -->
     <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
@@ -67,8 +88,8 @@
     <string name="download_cache_renew_interval_info">If set to "manual", either refresh each manga or using the "Invalidate downloads index" action in "Advanced"</string>
 
     <!-- Tracking section -->
-    <string name="pref_update_tracking_marked_read">Update progress when marked as read</string>
-    <string name="pref_auto_sync_read_chapters">Auto sync read chapters from Trackers</string>
+    <string name="pref_auto_sync_progress_from_trackers">Auto sync progress from Trackers</string>
+    <string name="sync_progress_from_trackers_up_to_chapter">Sync progress from Trackers up to chapter %d</string>
 
     <!-- Sync section -->
     <string name="pref_show_restoring_progress_banner">Show restoring progress banner</string>
@@ -114,9 +135,24 @@
     <string name="saved_searches_add_feed">Saved Searches (Hold to add to Feed)</string>
     <string name="saved_searches_delete">Saved Searches (Hold to delete)</string>
 
+    <!-- Error Screen -->
+    <string name="option_label_library_update_errors">Library update errors</string>
+    <string name="label_library_update_errors">Library update errors (%d)</string>
+    <string name="info_empty_library_update_errors">You have no library update errors.</string>
+    <string name="action_scroll_to_top">Scroll to top</string>
+    <string name="action_scroll_to_bottom">Scroll to bottom</string>
+    <string name="action_scroll_to_previous">Scroll to previous</string>
+    <string name="action_scroll_to_next">Scroll to next</string>
+
     <!-- Feed Tab -->
     <string name="too_many_in_feed">Too many sources in your feed, cannot add more than limited (20)</string>
+    <string name="action_sort_feed">Sort feeds</string>
+    <string name="sort_feed_confirmation">Would you like to sort the feeds alphabetically?</string>
 
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>
+    <string name="migrating_all_entries">Migrating all entries from source</string>
+
+    <!-- Misc -->
+    <string name="label_to_be_updated">To be updated</string>
 </resources>

@@ -1,5 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9512" changeDate="October 28, 2024">
+        <changelogtext>[b]New:[/b] Error screen (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]New:[/b] Range-selection for Migration (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] Loading screen for Upcomping/Updating screen (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] allow chapter 0 dupe auto mark as read (@Luqman)</changelogtext>
+        <changelogtext>[b]Improve:[/b] rework panorama cover settings (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] update all trackers based on common data when new tracker is added (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] show a toast whenever progress is synced from Trackers (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow Always/Ask/Nerver update trackers on mark as read (@Roshan Varughese)</changelogtext>
+        <changelogtext>[b]Improve:[/b] Avoid blocking call causing lag in settings (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Fix:[/b] for ExHentai (@az4521, @jobobby04)</changelogtext>
+        <changelogtext>[b]Fix:[/b] sync progress from tracker not working if chapters order is messed up after backup restoration (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Fix:[/b] app crash when removing tracked entry from tracker (@Cuong-Tran)</changelogtext>
+        <changelogtext>[b]Fix:[/b] reader slider (@AntsyLich)</changelogtext>
+        <changelogtext>[b]Fix:[/b] settings SliderItem steps count (@abdurisaq)</changelogtext>
+        <changelogtext>[b]Fix:[/b] title for Checking update screen to "To be updated" (@Cuong-Tran)</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r9484" changeDate="October 23, 2024">
+        <changelogtext>[b]New:[/b] show all entries going to be checked for Smart update on Upcoming screen</changelogtext>
+        <changelogtext>[b]New:[/b] allow Feed to hide entries already in Library</changelogtext>
+        <changelogtext>[b]New:[/b] Added random library sort</changelogtext>
+        <changelogtext>[b]New:[/b] Add option to opt out of Crashlytics</changelogtext>
+        <changelogtext>[b]Improve:[/b] show duplicating manga cover on Duplicate dialog</changelogtext>
+        <changelogtext>[b]Improve:[/b] always enable panorama cover for Feed &amp; Global search</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add Quantity Badge to Upcoming Screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] make global search pinned/all sticky</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide Pinned chip in Global/Migrate Search if no pinned sources available</changelogtext>
+        <changelogtext>[b]Improve:[/b] Allow adding multiple tags separated by commas</changelogtext>
+        <changelogtext>[b]Improve:[/b] show loading indicator while bulk-selection is running</changelogtext>
+        <changelogtext>[b]Improve:[/b] bulk-selection: reverse selection</changelogtext>
+        <changelogtext>[b]Improve:[/b] auto select saved-search tab if opened from another screen</changelogtext>
+        <changelogtext>[b]Improve:[/b] Reload saved-searches when screen is navigated back to</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide Filter save-button on SourceFeedScreen</changelogtext>
+        <changelogtext>[b]Improve:[/b] only load suggestions after entry finished loading info &amp; chapters</changelogtext>
+        <changelogtext>[b]Improve:[/b] Hide sync library option when sync is disabled</changelogtext>
+        <changelogtext>[b]Improve:[/b] Show download state and progress on reader chapter list.</changelogtext>
+        <changelogtext>[b]Improve:[/b] Confirmation dialog when removing privately installed extensions</changelogtext>
+        <changelogtext>[b]Fix:[/b] Revert to automatically sync marked read chapters to trackers</changelogtext>
+        <changelogtext>[b]Fix:[/b] late loading saved-searches when jump from SourceFeedScreen or FeedScreen</changelogtext>
+        <changelogtext>[b]Fix:[/b] color when using custom theme with AndroidView on DownloadQueue &amp; MigrationBottomSheetDialog</changelogtext>
+        <changelogtext>[b]Fix:[/b] source search box's height</changelogtext>
+        <changelogtext>[b]Fix:[/b] issue with not showing source names in merged manga sometimes</changelogtext>
+        <changelogtext>[b]Fix:[/b] EnhancedTracker not auto binding when adding manga to library</changelogtext>
+        <changelogtext>[b]Fix:[/b] Retain remote last chapter read if it's higher than the local one for EnhancedTracker</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r9404" changeDate="September 27, 2024">
+        <changelogtext>[b]New:[/b] feat(ui): Panorama cover</changelogtext>
+        <changelogtext>[b]New:[/b] feat(ui): read/resume button movable</changelogtext>
+        <changelogtext>[b]Improve:[/b] Colors palette for Custom theme</changelogtext>
+        <changelogtext>[b]Improve:[/b] Improve custom theme</changelogtext>
+        <changelogtext>[b]Improve:[/b] Default disable Integrated hentai features</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide batch add if integrated H &amp; Delegated src is off</changelogtext>
+        <changelogtext>[b]Improve:[/b] add MangaDex to Batch-Add example</changelogtext>
+        <changelogtext>[b]Improve:[/b] enable hidden categories by default</changelogtext>
+        <changelogtext>[b]Improve:[/b] translation for Turkish &amp; update others</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r9378" changeDate="September 18, 2024">
+        <changelogtext>[b]New:[/b] ui: show number of entries on upcoming screen</changelogtext>
+        <changelogtext>[b]New:[/b] feat(ui): saved search tabs for browse source</changelogtext>
+        <changelogtext>[b]New:[/b] feat: feed reorder screen &amp; support sources' saved-searches</changelogtext>
+        <changelogtext>[b]New:[/b] feat: Hidden categories</changelogtext>
+        <changelogtext>[b]New:[/b] disable smart-update for individual &amp; fix custom interval</changelogtext>
+        <changelogtext>[b]New:[/b] Option to update trackers when chapter marked as read</changelogtext>
+        <changelogtext>[b]Improve:[/b] e-hentai language flag</changelogtext>
+        <changelogtext>[b]Improve:[/b] Support skip-downloading-duplicate-read-chapters for merged entries</changelogtext>
+        <changelogtext>[b]Improve:[/b] Show local chapters as downloaded on merged entries</changelogtext>
+        <changelogtext>[b]Improve:[/b] Re-enable fetching chapters list for entries with licensed status</changelogtext>
+        <changelogtext>[b]Improve:[/b] Move "Choose what to sync" out of "Sync now"</changelogtext>
+        <changelogtext>[b]Improve:[/b] Respect `thumbnailQuality` and `tryUsingFirstVolumeCover` preferences</changelogtext>
+        <changelogtext>[b]Improve:[/b] Reduce ChapterNavigator horizontal padding on small ui</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide display mode for e-hentai</changelogtext>
+        <changelogtext>[b]Improve:[/b] Ignore "intent://" urls on webview</changelogtext>
+        <changelogtext>[b]Improve:[/b] Remove legacy broken source and history backup</changelogtext>
+        <changelogtext>[b]Fix:[/b] Kitsu `ratingTwenty` being typed as String</changelogtext>
+        <changelogtext>[b]Fix:[/b] Kitsu `synopsis` nullability</changelogtext>
+        <changelogtext>[b]Fix:[/b] wrong feed adding when filter search</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9318" changeDate="August 31, 2024">
         <changelogtext>[b]Hot Fix:[/b] fix extension won't update</changelogtext>
         <changelogtext>[b]Hot Fix:[/b] ext obsolete status</changelogtext>
@@ -13,10 +90,10 @@
         <changelogtext>[b]New:[/b] Show repo icon for Komikku &amp; Keiyoushi</changelogtext>
         <changelogtext>[b]New:[/b] Custom themes</changelogtext>
         <changelogtext>[b]New:[/b] Allow sync Feeds &amp; extension-repo settings</changelogtext>
-        <changelogtext>[b]New:[/b] Add "show entry" action to download notifications </changelogtext>
+        <changelogtext>[b]New:[/b] Add 'show entry' action to download notifications</changelogtext>
         <changelogtext>[b]New:[/b] Add option to skip downloading duplicate read chapters</changelogtext>
         <changelogtext>[b]New:[/b] Delete duplicate downloaded chapters when they are automatically marked as read</changelogtext>
-        <changelogtext>[b]New:[/b] Remove the UNOFFICIAL status, remove built-in Komikku repo, instead allow adding it as default</changelogtext>
+        <changelogtext>[b]New:[/b] Remove the 'UNOFFICIAL' status, remove built-in Komikku repo, instead allow adding it as default</changelogtext>
         <changelogtext>[b]Improve:[/b] Show same extension from multiple repos &amp; show their repo's name</changelogtext>
         <changelogtext>[b]Improve:[/b] Rename Related Titles to Suggestions</changelogtext>
         <changelogtext>[b]Improve:[/b] Add more auto backup hours</changelogtext>
@@ -31,7 +108,7 @@
         <changelogtext>[b]Improve:[/b] Option to not backup Saved searches &amp; Feeds</changelogtext>
         <changelogtext>[b]Improve:[/b] Change Reader's open-in-browser icon to Explore</changelogtext>
         <changelogtext>[b]Fix:[/b] Smart library updates now will honor the 'Skip Completed' option</changelogtext>
-        <changelogtext>[b]Fix:[/b] Setting to hide home button while browsing Related title</changelogtext>
+        <changelogtext>[b]Fix:[/b] Setting to hide home button while browsing Suggestions</changelogtext>
     </changelogversion>
     <changelogversion versionName="r9234" changeDate="August 13, 2024">
         <changelogtext>[b]New:[/b] Add option to only show entries with new chapters</changelogtext>

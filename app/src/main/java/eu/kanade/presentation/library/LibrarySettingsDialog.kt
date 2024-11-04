@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +38,7 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.BaseSortItem
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
 import tachiyomi.presentation.core.components.IconItem
@@ -200,39 +203,58 @@ private fun ColumnScope.SortPage(
         globalSortMode.type
     }
     val sortDescending = if (screenModel.grouping == LibraryGroup.BY_DEFAULT) {
-        category.sort.isAscending
+        !category.sort.isAscending
     } else {
-        globalSortMode.isAscending
-    }.not()
+        !globalSortMode.isAscending
+    }
     val hasSortTags by remember {
         screenModel.libraryPreferences.sortTagsForLibrary().changes()
             .map { it.isNotEmpty() }
     }.collectAsState(initial = screenModel.libraryPreferences.sortTagsForLibrary().get().isNotEmpty())
     // SY <--
 
-    val trackerSortOption = if (trackers.isEmpty()) {
-        emptyList()
-    } else {
-        listOf(MR.strings.action_sort_tracker_score to LibrarySort.Type.TrackerMean)
-    }
-
-    listOfNotNull(
-        MR.strings.action_sort_alpha to LibrarySort.Type.Alphabetical,
-        MR.strings.action_sort_total to LibrarySort.Type.TotalChapters,
-        MR.strings.action_sort_last_read to LibrarySort.Type.LastRead,
-        MR.strings.action_sort_last_manga_update to LibrarySort.Type.LastUpdate,
-        MR.strings.action_sort_unread_count to LibrarySort.Type.UnreadCount,
-        MR.strings.action_sort_latest_chapter to LibrarySort.Type.LatestChapter,
-        MR.strings.action_sort_chapter_fetch_date to LibrarySort.Type.ChapterFetchDate,
-        MR.strings.action_sort_date_added to LibrarySort.Type.DateAdded,
+    val options = remember(trackers.isEmpty()/* SY --> */, hasSortTags/* SY <-- */) {
+        val trackerMeanPair = if (trackers.isNotEmpty()) {
+            MR.strings.action_sort_tracker_score to LibrarySort.Type.TrackerMean
+        } else {
+            null
+        }
         // SY -->
-        if (hasSortTags) {
+        val tagSortPair = if (hasSortTags) {
             SYMR.strings.tag_sorting to LibrarySort.Type.TagList
         } else {
             null
-        },
+        }
         // SY <--
-    ).plus(trackerSortOption).map { (titleRes, mode) ->
+        listOfNotNull(
+            MR.strings.action_sort_alpha to LibrarySort.Type.Alphabetical,
+            MR.strings.action_sort_total to LibrarySort.Type.TotalChapters,
+            MR.strings.action_sort_last_read to LibrarySort.Type.LastRead,
+            MR.strings.action_sort_last_manga_update to LibrarySort.Type.LastUpdate,
+            MR.strings.action_sort_unread_count to LibrarySort.Type.UnreadCount,
+            MR.strings.action_sort_latest_chapter to LibrarySort.Type.LatestChapter,
+            MR.strings.action_sort_chapter_fetch_date to LibrarySort.Type.ChapterFetchDate,
+            MR.strings.action_sort_date_added to LibrarySort.Type.DateAdded,
+            trackerMeanPair,
+            // SY -->
+            tagSortPair,
+            // SY <--
+            MR.strings.action_sort_random to LibrarySort.Type.Random,
+        )
+    }
+
+    options.map { (titleRes, mode) ->
+        if (mode == LibrarySort.Type.Random) {
+            BaseSortItem(
+                label = stringResource(titleRes),
+                icon = Icons.Default.Refresh
+                    .takeIf { sortingMode == LibrarySort.Type.Random },
+                onClick = {
+                    screenModel.setSort(category, mode, LibrarySort.Direction.Ascending)
+                },
+            )
+            return@map
+        }
         SortItem(
             label = stringResource(titleRes),
             sortDescending = sortDescending.takeIf { sortingMode == mode },
@@ -244,7 +266,11 @@ private fun ColumnScope.SortPage(
                     } else {
                         LibrarySort.Direction.Descending
                     }
-                    else -> if (sortDescending) LibrarySort.Direction.Descending else LibrarySort.Direction.Ascending
+                    else -> if (sortDescending) {
+                        LibrarySort.Direction.Descending
+                    } else {
+                        LibrarySort.Direction.Ascending
+                    }
                 }
                 screenModel.setSort(category, mode, direction)
             },
@@ -255,8 +281,11 @@ private fun ColumnScope.SortPage(
 private val displayModes = listOf(
     MR.strings.action_display_grid to LibraryDisplayMode.CompactGrid,
     MR.strings.action_display_comfortable_grid to LibraryDisplayMode.ComfortableGrid,
-    MR.strings.action_display_cover_only_grid to LibraryDisplayMode.CoverOnlyGrid,
     MR.strings.action_display_list to LibraryDisplayMode.List,
+    MR.strings.action_display_cover_only_grid to LibraryDisplayMode.CoverOnlyGrid,
+    // KMK -->
+    KMR.strings.action_display_comfortable_grid_panorama to LibraryDisplayMode.ComfortableGridPanorama,
+    // KMK <--
 )
 
 @Suppress("UnusedReceiverParameter")
@@ -335,6 +364,12 @@ private fun ColumnScope.DisplayPage(
         label = stringResource(MR.strings.action_display_show_tabs),
         pref = screenModel.libraryPreferences.categoryTabs(),
     )
+    // KMK -->
+    CheckboxItem(
+        label = stringResource(KMR.strings.action_show_hidden_categories),
+        pref = screenModel.libraryPreferences.showHiddenCategories(),
+    )
+    // KMK <--
     CheckboxItem(
         label = stringResource(MR.strings.action_display_show_number_of_items),
         pref = screenModel.libraryPreferences.categoryNumberOfItems(),

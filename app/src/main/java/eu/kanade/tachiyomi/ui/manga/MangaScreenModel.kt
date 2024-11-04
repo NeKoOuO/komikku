@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.ui.manga
 
-import android.app.Application
 import android.content.Context
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -11,6 +11,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.util.fastAny
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -39,6 +41,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.interactor.TrackChapter
+import eu.kanade.domain.track.model.AutoTrackState
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
@@ -158,22 +161,23 @@ import kotlin.math.floor
 import androidx.compose.runtime.State as RuntimeState
 
 class MangaScreenModel(
-    val context: Context,
-    val mangaId: Long,
+    private val context: Context,
+    private val lifecycle: Lifecycle,
+    private val mangaId: Long,
     // SY -->
     /** If it is opened from Source then it will auto expand the manga description */
     private val isFromSource: Boolean,
     private val smartSearched: Boolean,
     // SY <--
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    private val trackPreferences: TrackPreferences = Injekt.get(),
     readerPreferences: ReaderPreferences = Injekt.get(),
     private val uiPreferences: UiPreferences = Injekt.get(),
     // KMK -->
     private val sourcePreferences: SourcePreferences = Injekt.get(),
-    private val trackPreferences: TrackPreferences = Injekt.get(),
-    private val trackChapter: TrackChapter = Injekt.get(),
     // KMK <--
     private val trackerManager: TrackerManager = Injekt.get(),
+    private val trackChapter: TrackChapter = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadCache: DownloadCache = Injekt.get(),
     private val getMangaAndChapters: GetMangaWithChapters = Injekt.get(),
@@ -238,6 +242,7 @@ class MangaScreenModel(
 
     val chapterSwipeStartAction = libraryPreferences.swipeToEndAction().get()
     val chapterSwipeEndAction = libraryPreferences.swipeToStartAction().get()
+    private var autoTrackState = trackPreferences.autoUpdateTrackOnMarkRead().get()
 
     private val skipFiltered by readerPreferences.skipFiltered().asState(screenModelScope)
 
@@ -348,6 +353,7 @@ class MangaScreenModel(
                 .combine(downloadCache.changes) { state, _ -> state }
                 .combine(downloadManager.queueState) { state, _ -> state }
                 // SY <--
+                .flowWithLifecycle(lifecycle)
                 .collectLatest { (manga, chapters /* SY --> */, flatMetadata, mergedData /* SY <-- */) ->
                     val chapterItems = chapters.toChapterListItems(manga /* SY --> */, mergedData /* SY <-- */)
                     updateSuccessState {
@@ -365,6 +371,7 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             getExcludedScanlators.subscribe(mangaId)
+                .flowWithLifecycle(lifecycle)
                 .distinctUntilChanged()
                 .collectLatest { excludedScanlators ->
                     updateSuccessState {
@@ -375,6 +382,7 @@ class MangaScreenModel(
 
         screenModelScope.launchIO {
             getAvailableScanlators.subscribe(mangaId)
+                .flowWithLifecycle(lifecycle)
                 .distinctUntilChanged()
                 // SY -->
                 .combine(
@@ -403,6 +411,14 @@ class MangaScreenModel(
             val manga = getMangaAndChapters.awaitManga(mangaId)
 
             // SY -->
+            val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
+                MergedMangaData(
+                    references,
+                    getMergedMangaById.await(mangaId).associateBy { it.id },
+                    references.map { it.mangaSourceId }.distinct()
+                        .map { sourceManager.getOrStub(it) },
+                )
+            }
             val chapters = (
                 if (manga.source ==
                     MERGED_SOURCE_ID
@@ -412,15 +428,7 @@ class MangaScreenModel(
                     getMangaAndChapters.awaitChapters(mangaId, applyScanlatorFilter = true)
                 }
                 )
-                .toChapterListItems(manga, null)
-            val mergedData = getMergedReferencesById.await(mangaId).takeIf { it.isNotEmpty() }?.let { references ->
-                MergedMangaData(
-                    references,
-                    getMergedMangaById.await(mangaId).associateBy { it.id },
-                    references.map { it.mangaSourceId }.distinct()
-                        .map { sourceManager.getOrStub(it) },
-                )
-            }
+                .toChapterListItems(manga, mergedData)
             val meta = getFlatMetadata.await(mangaId)
             // SY <--
 
@@ -482,10 +490,10 @@ class MangaScreenModel(
                     async { if (needRefreshInfo) fetchMangaFromSource() },
                     async { if (needRefreshChapter) fetchChaptersFromSource() },
                 )
+                fetchFromSourceTasks.awaitAll()
                 // KMK -->
                 launch { fetchRelatedMangasFromSource() }
                 // KMK <--
-                fetchFromSourceTasks.awaitAll()
             }
 
             // Initial loading finished
@@ -551,7 +559,7 @@ class MangaScreenModel(
     }
 
     private suspend fun syncTrackers() {
-        if (!trackPreferences.autoSyncReadChapters().get()) return
+        if (!trackPreferences.autoSyncProgressFromTrackers().get()) return
 
         val refreshTracks = Injekt.get<RefreshTracks>()
         refreshTracks.await(mangaId)
@@ -695,6 +703,7 @@ class MangaScreenModel(
         return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
                 .filterNotNull()
+                .flowWithLifecycle(lifecycle)
                 .collectLatest { manga ->
                     value = manga
                 }
@@ -946,6 +955,7 @@ class MangaScreenModel(
                     }
                 }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
+                .flowWithLifecycle(lifecycle)
                 .collect {
                     withUIContext {
                         updateDownloadState(it)
@@ -964,6 +974,7 @@ class MangaScreenModel(
                     }
                 }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
+                .flowWithLifecycle(lifecycle)
                 .collect {
                     withUIContext {
                         updateDownloadState(it)
@@ -1008,7 +1019,7 @@ class MangaScreenModel(
             val manga = mergedData?.manga?.get(chapter.mangaId) ?: manga
             val source = mergedData?.sources?.find { manga.source == it.id }?.takeIf { mergedData.sources.size > 2 }
             // SY <--
-            val downloaded = if (isLocal) {
+            val downloaded = if (manga.isLocal()) {
                 true
             } else {
                 downloadManager.isChapterDownloaded(
@@ -1185,11 +1196,6 @@ class MangaScreenModel(
         when (swipeAction) {
             LibraryPreferences.ChapterSwipeAction.ToggleRead -> {
                 markChaptersRead(listOf(chapter), !chapter.read)
-                // KMK -->
-                if (!chapter.read) {
-                    updateTrackChapterMarkedAsRead(chapter)
-                }
-                // KMK <--
             }
             LibraryPreferences.ChapterSwipeAction.ToggleBookmark -> {
                 bookmarkChapters(listOf(chapter), !chapter.bookmark)
@@ -1327,37 +1333,43 @@ class MangaScreenModel(
      * @param read whether to mark chapters as read or unread.
      */
     fun markChaptersRead(chapters: List<Chapter>, read: Boolean) {
+        toggleAllSelection(false)
+        if (chapters.isEmpty()) return
         screenModelScope.launchIO {
             setReadStatus.await(
                 read = read,
                 chapters = chapters.toTypedArray(),
             )
+
+            if (!read || successState?.hasLoggedInTrackers == false || autoTrackState == AutoTrackState.NEVER) {
+                return@launchIO
+            }
+
+            val tracks = getTracks.await(mangaId)
+            val maxChapterNumber = chapters.maxOf { it.chapterNumber }
+            val shouldPromptTrackingUpdate = tracks.any { track -> maxChapterNumber > track.lastChapterRead }
+
+            if (!shouldPromptTrackingUpdate) return@launchIO
+            if (autoTrackState == AutoTrackState.ALWAYS) {
+                trackChapter.await(context, mangaId, maxChapterNumber)
+                withUIContext {
+                    context.toast(context.stringResource(MR.strings.trackers_updated_summary, maxChapterNumber.toInt()))
+                }
+                return@launchIO
+            }
+
+            val result = snackbarHostState.showSnackbar(
+                message = context.stringResource(MR.strings.confirm_tracker_update, maxChapterNumber.toInt()),
+                actionLabel = context.stringResource(MR.strings.action_ok),
+                duration = SnackbarDuration.Short,
+                withDismissAction = true,
+            )
+
+            if (result == SnackbarResult.ActionPerformed) {
+                trackChapter.await(context, mangaId, maxChapterNumber)
+            }
         }
-        // KMK -->
-        if (read) {
-            chapters.maxByOrNull { it.chapterNumber }
-                ?.also { updateTrackChapterMarkedAsRead(it) }
-        }
-        // KMK <--
-        toggleAllSelection(false)
     }
-
-    // KMK -->
-    /**
-     * Starts the service that updates the chapter marked as read in sync services. This operation
-     * will run in a background thread and errors are ignored.
-     */
-    private fun updateTrackChapterMarkedAsRead(chapter: Chapter) {
-        if (!trackPreferences.updateTrackMarkedRead().get()) return
-
-        val manga = manga ?: return
-        val context = Injekt.get<Application>()
-
-        screenModelScope.launchNonCancellable {
-            trackChapter.await(context, manga.id, chapter.chapterNumber)
-        }
-    }
-    // KMK <--
 
     /**
      * Downloads the given list of chapters with the manager.
@@ -1417,12 +1429,9 @@ class MangaScreenModel(
     private fun downloadNewChapters(chapters: List<Chapter>) {
         screenModelScope.launchNonCancellable {
             val manga = successState?.manga ?: return@launchNonCancellable
-            // EXH -->
-            if (manga.isEhBasedManga()) return@launchNonCancellable
-            // EXH <--
             val chaptersToDownload = filterChaptersForDownload.await(manga, chapters)
 
-            if (chaptersToDownload.isNotEmpty()) {
+            if (chaptersToDownload.isNotEmpty() /* SY --> */ && !manga.isEhBasedManga() /* SY <-- */) {
                 downloadChapters(chaptersToDownload)
             }
         }
@@ -1659,6 +1668,7 @@ class MangaScreenModel(
                         .size to supportedTrackers.isNotEmpty()
                 }
                 // SY <--
+                .flowWithLifecycle(lifecycle)
                 .distinctUntilChanged()
                 .collectLatest { (trackingCount, hasLoggedInTrackers) ->
                     updateSuccessState {

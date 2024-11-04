@@ -28,6 +28,8 @@ class LibraryPreferences(
         LibrarySort.Serializer::deserialize,
     )
 
+    fun randomSortSeed() = preferenceStore.getInt("library_random_sort_seed", 0)
+
     fun portraitColumns() = preferenceStore.getInt("pref_library_columns_portrait_key", 0)
 
     fun landscapeColumns() = preferenceStore.getInt("pref_library_columns_landscape_key", 0)
@@ -151,6 +153,10 @@ class LibraryPreferences(
     fun categoryNumberOfItems() = preferenceStore.getBoolean("display_number_of_items", false)
 
     fun categorizedDisplaySettings() = preferenceStore.getBoolean("categorized_display", false)
+
+    // KMK -->
+    fun showHiddenCategories() = preferenceStore.getBoolean("hide_hidden_categories", false)
+    // KMK <--
 
     fun updateCategories() = preferenceStore.getStringSet("library_update_categories", emptySet())
 

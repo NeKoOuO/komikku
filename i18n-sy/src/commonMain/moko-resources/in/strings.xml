@@ -381,6 +381,7 @@
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">Batch Add</string>
+    <string name="md_batch_add_description">Example:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">Example:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nIt also supports E-H Visited exported data\n</string>
     <string name="eh_batch_add_title">Enter the galleries to add (separated by a new line):</string>
     <string name="eh_batch_add_button">Add Galleries</string>
@@ -527,4 +528,47 @@
     <string name="put_merge_in_overflow">Gabungkan dalam luapan</string>
     <string name="put_merge_in_overflow_summary">Letakkan tombol penggabungan di menu luapan, bukan di halaman entri</string>
     <string name="pref_previews_row_count">Mempratinjau jumlah baris</string>
+    <string name="pref_mark_read_dupe_chapters_summary">Tandai bagian serupa sebagai sudah terbaca setelah membaca</string>
+    <string name="update_30min">Setiap 30 menit</string>
+    <string name="pref_library_mark_duplicate_chapters_summary">Secara otomatis menandai bab baru sebagai sudah dibaca jika sudah dibaca sebelumnya</string>
+    <string name="pref_sync_interval">Frekuensi sinkronisasi</string>
+    <string name="sync_in_progress">Sinkronisasi sudah berlangsung</string>
+    <string name="update_1hour">Setiap jam</string>
+    <string name="sync_error">Gagal Menyinkronkan perpustakaan</string>
+    <string name="pref_google_drive_purge_sync_data">Menghapus Data Sinkronisasi dari Google Drive</string>
+    <string name="pref_mark_read_dupe_chapters">Tandai bagian serupa sebagai sudah terbaca</string>
+    <string name="pref_library_mark_duplicate_chapters">Tandai bagian baru yang sudah terbaca sebagai terbaca</string>
+    <string name="update_3hour">Setiap 3 jam</string>
+    <string name="label_triggers">Pemicu</string>
+    <string name="sync_complete">Berhasil Menyinkronkan perpustakaan</string>
+    <string name="label_sync">Sinkronisasi</string>
+    <string name="pref_sync_host">Host</string>
+    <string name="pref_sync_host_summ">Masukkan alamat host untuk menyinkronkan perpustakaan Anda</string>
+    <string name="pref_sync_api_key">Kunci API</string>
+    <string name="pref_sync_api_key_summ">Masukkan kunci API untuk menyinkronkan perpustakaan Anda</string>
+    <string name="pref_sync_now_group_title">Tindakan Sinkronisasi</string>
+    <string name="pref_sync_now">Sinkronisasi sekarang</string>
+    <string name="pref_sync_now_subtitle">Memulai sinkronisasi data Anda dengan segera</string>
+    <string name="pref_sync_service">Layanan</string>
+    <string name="pref_sync_service_category">Sinkronisasi</string>
+    <string name="pref_sync_automatic_category">Otomatis Sinkronisasi</string>
+    <string name="pref_choose_what_to_sync">Pilih apa yang akan di sinkronisasi</string>
+    <string name="syncyomi">SyncYomi</string>
+    <string name="last_synchronization">Sinkronisasi Terakhir: %1$s</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="pref_google_drive_sign_in">Masuk</string>
+    <string name="google_drive_sync_data_purged">Data sinkronisasi dihapus dari Google Drive</string>
+    <string name="google_drive_sync_data_not_found">Tidak ada data sinkronisasi yang ditemukan di Google Drive</string>
+    <string name="google_drive_sync_data_purge_error">Kesalahan membersihkan data sinkronisasi dari Google Drive, Coba masuk lagi.</string>
+    <string name="google_drive_login_success">Masuk ke Google Drive</string>
+    <string name="pref_hide_feed">Sembunyikan tab Umpan</string>
+    <string name="pref_feed_position">Posisi tab Umpan</string>
+    <string name="pref_feed_position_summery">Apakah Anda ingin tab Umpan menjadi tab pertama dalam penjelajahan? Ini akan menjadikannya tab default saat membuka penjelajahan, tidak disarankan jika Anda menggunakan data atau jaringan terukur</string>
+    <string name="error_uploading_sync_data">Terjadi kesalahan saat mengunggah data sinkronisasi ke Google Drive</string>
+    <string name="google_drive_login_failed">Gagal masuk ke Google Drive: %s</string>
+    <string name="google_drive_not_signed_in">Belum masuk ke Google Drive</string>
+    <string name="pref_sync_options">Buat pemicu sinkronisasi</string>
+    <string name="error_deleting_google_drive_lock_file">Kesalahan saat menghapus file kunci Google Drive</string>
+    <string name="error_before_sync_gdrive">Gagal sebelum sinkron: %s</string>
+    <string name="pref_purge_confirmation_title">Konfirmasi pembersihan</string>
 </resources>

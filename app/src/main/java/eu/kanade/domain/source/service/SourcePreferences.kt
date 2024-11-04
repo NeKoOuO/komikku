@@ -1,6 +1,7 @@
 package eu.kanade.domain.source.service
 
 import eu.kanade.domain.source.interactor.SetMigrateSorting
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SourceFilter
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
@@ -40,6 +41,10 @@ class SourcePreferences(
 
     fun hideInLibraryItems() = preferenceStore.getBoolean("browse_hide_in_library_items", false)
 
+    // KMK -->
+    fun hideInLibraryFeedItems() = preferenceStore.getBoolean("feed_hide_in_library_items", false)
+    // KMK <--
+
     @Deprecated("Use ExtensionRepoRepository instead", replaceWith = ReplaceWith("ExtensionRepoRepository.getAll()"))
     fun extensionRepos() = preferenceStore.getStringSet("extension_repos", emptySet())
 
@@ -56,6 +61,11 @@ class SourcePreferences(
     )
 
     // KMK -->
+    fun globalSearchPinnedState() = preferenceStore.getEnum(
+        Preference.appStateKey("global_search_pinned_toggle_state"),
+        SourceFilter.PinnedOnly,
+    )
+
     fun disabledRepos() = preferenceStore.getStringSet("disabled_repos", emptySet())
     // KMK <--
 

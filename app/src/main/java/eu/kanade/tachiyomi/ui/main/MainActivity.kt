@@ -11,17 +11,22 @@ import android.os.Bundle
 import android.os.Looper
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,16 +34,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.core.animation.doOnEnd
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.util.Consumer
-import androidx.core.view.WindowCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
@@ -46,9 +51,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.ktx.Firebase
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.presentation.components.AppStateBanners
@@ -83,7 +85,6 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
 import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isNavigationBarNeedsScrim
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.isReleaseBuildType
@@ -119,7 +120,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.LinkedList
-import androidx.compose.ui.graphics.Color.Companion as ComposeColor
 
 class MainActivity : BaseActivity() {
 
@@ -180,7 +180,6 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         val didMigration = if (isLaunch) {
-            addAnalytics()
             Migrator.awaitAndRelease()
         } else {
             false
@@ -197,11 +196,9 @@ class MainActivity : BaseActivity() {
         val hasDebugOverlay = (BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest")
         // SY <--
 
-        // Draw edge-to-edge
-        // TODO: replace with ComponentActivity#enableEdgeToEdge
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
         setComposeContent {
+            val context = LocalContext.current
+
             val incognito by preferences.incognitoMode().collectAsState()
             val downloadOnly by preferences.downloadedOnly().collectAsState()
             val indexing by downloadCache.isInitializing.collectAsState()
@@ -220,8 +217,6 @@ class MainActivity : BaseActivity() {
             val updatingProgress by libraryUpdateStatus.progress.collectAsState()
             // KMK <--
 
-            // Set status bar color considering the top app state banner
-            val systemUiController = rememberSystemUiController()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val statusBarBackgroundColor = when {
                 // KMK -->
@@ -234,27 +229,13 @@ class MainActivity : BaseActivity() {
                 incognito -> IncognitoModeBannerBackgroundColor
                 else -> MaterialTheme.colorScheme.surface
             }
-            LaunchedEffect(systemUiController, statusBarBackgroundColor) {
-                systemUiController.setStatusBarColor(
-                    color = ComposeColor.Transparent,
-                    darkIcons = statusBarBackgroundColor.luminance() > 0.5,
-                    transformColorForLightContent = { ComposeColor.Black },
-                )
-            }
-
-            // Set navigation bar color
-            val context = LocalContext.current
-            val navbarScrimColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-            LaunchedEffect(systemUiController, isSystemInDarkTheme, navbarScrimColor) {
-                systemUiController.setNavigationBarColor(
-                    color = if (context.isNavigationBarNeedsScrim()) {
-                        navbarScrimColor.copy(alpha = 0.7f)
-                    } else {
-                        ComposeColor.Transparent
-                    },
-                    darkIcons = !isSystemInDarkTheme,
-                    navigationBarContrastEnforced = false,
-                    transformColorForLightContent = { ComposeColor.Black },
+            LaunchedEffect(isSystemInDarkTheme, statusBarBackgroundColor) {
+                // Draw edge-to-edge and set system bars color to transparent
+                val lightStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.BLACK)
+                val darkStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+                enableEdgeToEdge(
+                    statusBarStyle = if (statusBarBackgroundColor.luminance() > 0.5) lightStyle else darkStyle,
+                    navigationBarStyle = if (isSystemInDarkTheme) darkStyle else lightStyle,
                 )
             }
 
@@ -309,13 +290,26 @@ class MainActivity : BaseActivity() {
                     contentWindowInsets = scaffoldInsets,
                 ) { contentPadding ->
                     // Consume insets already used by app state banners
-                    Box(
-                        modifier = Modifier
-                            .padding(contentPadding)
-                            .consumeWindowInsets(contentPadding),
-                    ) {
+                    Box {
                         // Shows current screen
-                        DefaultNavigatorScreenTransition(navigator = navigator)
+                        DefaultNavigatorScreenTransition(
+                            navigator = navigator,
+                            modifier = Modifier
+                                .padding(contentPadding)
+                                .consumeWindowInsets(contentPadding),
+                        )
+
+                        // Draw navigation bar scrim when needed
+                        if (remember { isNavigationBarNeedsScrim() }) {
+                            Spacer(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth()
+                                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                                    .alpha(0.8f)
+                                    .background(MaterialTheme.colorScheme.surfaceContainer),
+                            )
+                        }
                     }
                 }
 
@@ -425,12 +419,13 @@ class MainActivity : BaseActivity() {
     @Composable
     private fun HandleOnNewIntent(context: Context, navigator: Navigator) {
         LaunchedEffect(Unit) {
-            callbackFlow<Intent> {
+            callbackFlow {
                 val componentActivity = context as ComponentActivity
                 val consumer = Consumer<Intent> { trySend(it) }
                 componentActivity.addOnNewIntentListener(consumer)
                 awaitClose { componentActivity.removeOnNewIntentListener(consumer) }
-            }.collectLatest { handleIntentAction(it, navigator) }
+            }
+                .collectLatest { handleIntentAction(it, navigator) }
         }
     }
 
@@ -486,6 +481,7 @@ class MainActivity : BaseActivity() {
      * When custom animation is used, status and navigation bar color will be set to transparent and will be restored
      * after the animation is finished.
      */
+    @Suppress("Deprecation")
     private fun setSplashScreenExitAnimation(splashScreen: SplashScreen?) {
         val root = findViewById<View>(android.R.id.content)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && splashScreen != null) {
@@ -548,6 +544,12 @@ class MainActivity : BaseActivity() {
                 navigator.popUntilRoot()
                 HomeScreen.Tab.More(toDownloads = true)
             }
+            // KMK -->
+            Constants.SHORTCUT_LIBRARY_UPDATE_ERRORS -> {
+                navigator.popUntilRoot()
+                HomeScreen.Tab.More(toDownloads = false, toLibraryUpdateErrors = true)
+            }
+            // KMK <--
             Intent.ACTION_SEARCH, Intent.ACTION_SEND, "com.google.android.gms.actions.SEARCH_ACTION" -> {
                 // If the intent match the "standard" Android search intent
                 // or the Google-specific search intent (triggered by saying or typing "search *query* on *Tachiyomi*" in Google Search/Google Assistant)
@@ -594,14 +596,6 @@ class MainActivity : BaseActivity() {
         ready = true
         return true
     }
-
-    // SY -->
-    private fun addAnalytics() {
-        if (!isDevFlavor && (isPreviewBuildType)) {
-            Firebase.analytics.setUserProperty("preview_version", BuildConfig.COMMIT_COUNT)
-        }
-    }
-    // SY <--
 
     companion object {
         const val INTENT_SEARCH = "eu.kanade.tachiyomi.SEARCH"

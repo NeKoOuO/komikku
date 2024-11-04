@@ -17,7 +17,7 @@ import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.RelatedMangasContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
-import eu.kanade.presentation.components.SelectionToolbar
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
@@ -48,19 +48,24 @@ fun RelatedMangasScreen(
     Scaffold(
         topBar = { scrollBehavior ->
             if (bulkFavoriteState.selectionMode) {
-                SelectionToolbar(
+                BulkSelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
+                    isRunning = bulkFavoriteState.isRunning,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
                         successState.relatedMangasSorted?.forEach {
                             val relatedManga = it as RelatedManga.Success
                             relatedManga.mangaList.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga)) {
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                bulkFavoriteScreenModel.select(manga)
                             }
                         }
+                    },
+                    onReverseSelection = {
+                        successState.relatedMangasSorted
+                            ?.map { it as RelatedManga.Success }
+                            ?.flatMap { it.mangaList }
+                            ?.let { bulkFavoriteScreenModel.reverseSelection(it) }
                     },
                 )
             } else {
@@ -71,6 +76,7 @@ fun RelatedMangasScreen(
                     onDisplayModeChange = { displayMode = it },
                     scrollBehavior = scrollBehavior,
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                    isRunning = bulkFavoriteState.isRunning,
                 )
             }
         },

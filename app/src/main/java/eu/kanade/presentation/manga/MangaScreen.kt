@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -26,6 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,22 +36,30 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
@@ -91,6 +102,7 @@ import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
 import eu.kanade.tachiyomi.ui.manga.ChapterList
 import eu.kanade.tachiyomi.ui.manga.MangaScreenModel
+import eu.kanade.tachiyomi.ui.manga.MergedMangaData
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
@@ -127,6 +139,7 @@ import uy.kohesive.injekt.api.get
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlin.math.roundToInt
 
 @Composable
 fun MangaScreen(
@@ -195,6 +208,7 @@ fun MangaScreen(
     librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
+    coverRatio: MutableFloatState,
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
     // KMK <--
@@ -259,6 +273,7 @@ fun MangaScreen(
             librarySearch = librarySearch,
             onSourceClick = onSourceClick,
             onCoverLoaded = onCoverLoaded,
+            coverRatio = coverRatio,
             onPaletteScreenClick = onPaletteScreenClick,
             hazeState = hazeState,
             // KMK <--
@@ -316,6 +331,7 @@ fun MangaScreen(
             librarySearch = librarySearch,
             onSourceClick = onSourceClick,
             onCoverLoaded = onCoverLoaded,
+            coverRatio = coverRatio,
             onPaletteScreenClick = onPaletteScreenClick,
             hazeState = hazeState,
             // KMK <--
@@ -390,6 +406,7 @@ private fun MangaScreenSmallImpl(
     librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
+    coverRatio: MutableFloatState,
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
     // KMK <--
@@ -415,6 +432,13 @@ private fun MangaScreenSmallImpl(
     val expandRelatedMangas by uiPreferences.expandRelatedMangas().collectAsState()
     val showRelatedMangasInOverflow by uiPreferences.relatedMangasInOverflow().collectAsState()
     val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
+
+    var layoutSize by remember { mutableStateOf(IntSize.Zero) }
+    var fabSize by remember { mutableStateOf(IntSize.Zero) }
+    var positionOnScreen by remember { mutableStateOf(Offset.Zero) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    val fabPosition by uiPreferences.readButtonPosition().collectAsState()
+    val readButtonPosition = uiPreferences.readButtonPosition()
     // KMK <--
 
     val internalOnBackPressed = {
@@ -501,6 +525,29 @@ private fun MangaScreenSmallImpl(
                 visible = isFABVisible,
                 enter = fadeIn(),
                 exit = fadeOut(),
+                // KMK -->
+                modifier = Modifier
+                    .offset { IntOffset(offsetX.roundToInt(), 0) }
+                    .onGloballyPositioned { coordinates ->
+                        fabSize = coordinates.size
+                        positionOnScreen = coordinates.positionOnScreen()
+                    }
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragEnd = {
+                                if (positionOnScreen.x + fabSize.width / 2 >= layoutSize.width / 2) {
+                                    readButtonPosition.set(FabPosition.End.toString())
+                                } else {
+                                    readButtonPosition.set(FabPosition.Start.toString())
+                                }
+                                offsetX = 0f
+                            },
+                        ) { change, dragAmount ->
+                            change.consume()
+                            offsetX += dragAmount
+                        }
+                    },
+                // KMK <--
             ) {
                 ExtendedFloatingActionButton(
                     text = {
@@ -521,7 +568,15 @@ private fun MangaScreenSmallImpl(
             }
         },
         // KMK -->
+        floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {
+            FabPosition.End
+        } else {
+            FabPosition.Start
+        },
         modifier = Modifier
+            .onGloballyPositioned { coordinates ->
+                layoutSize = coordinates.size
+            }
             .haze(
                 state = hazeState,
                 style = HazeStyle(
@@ -561,19 +616,16 @@ private fun MangaScreenSmallImpl(
                         MangaInfoBox(
                             isTabletUi = false,
                             appBarPadding = topPadding,
-                            title = state.manga.title,
-                            author = state.manga.author,
-                            artist = state.manga.artist,
+                            manga = state.manga,
                             sourceName = remember { state.source.getNameForMangaInfo(state.mergedData?.sources) },
                             isStubSource = remember { state.source is StubSource },
-                            coverDataProvider = { state.manga },
-                            status = state.manga.status,
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
                             // KMK -->
                             librarySearch = librarySearch,
                             onSourceClick = onSourceClick,
                             onCoverLoaded = onCoverLoaded,
+                            coverRatio = coverRatio,
                             // KMK <--
                         )
                     }
@@ -598,6 +650,7 @@ private fun MangaScreenSmallImpl(
                             // SY <--
                             // KMK -->
                             status = state.manga.status,
+                            interval = state.manga.fetchInterval,
                             // KMK <--
                         )
                     }
@@ -727,6 +780,7 @@ private fun MangaScreenSmallImpl(
 
                     sharedChapterItems(
                         manga = state.manga,
+                        mergedData = state.mergedData,
                         chapters = listItem,
                         isAnyChapterSelected = chapters.fastAny { it.selected },
                         chapterSwipeStartAction = chapterSwipeStartAction,
@@ -812,6 +866,7 @@ private fun MangaScreenLargeImpl(
     librarySearch: (query: String) -> Unit,
     onSourceClick: () -> Unit,
     onCoverLoaded: (MangaCover) -> Unit,
+    coverRatio: MutableFloatState,
     onPaletteScreenClick: () -> Unit,
     hazeState: HazeState,
     // KMK <--
@@ -836,6 +891,13 @@ private fun MangaScreenLargeImpl(
     val expandRelatedMangas by uiPreferences.expandRelatedMangas().collectAsState()
     val showRelatedMangasInOverflow by uiPreferences.relatedMangasInOverflow().collectAsState()
     val fullCoverBackground = MaterialTheme.colorScheme.surfaceTint.blend(MaterialTheme.colorScheme.surface)
+
+    var layoutSize by remember { mutableStateOf(IntSize.Zero) }
+    var fabSize by remember { mutableStateOf(IntSize.Zero) }
+    var positionOnScreen by remember { mutableStateOf(Offset.Zero) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    val fabPosition by uiPreferences.readButtonPosition().collectAsState()
+    val readButtonPosition = uiPreferences.readButtonPosition()
     // KMK <--
 
     val insetPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues()
@@ -919,6 +981,29 @@ private fun MangaScreenLargeImpl(
                 visible = isFABVisible,
                 enter = fadeIn(),
                 exit = fadeOut(),
+                // KMK -->
+                modifier = Modifier
+                    .offset { IntOffset(offsetX.roundToInt(), 0) }
+                    .onGloballyPositioned { coordinates ->
+                        fabSize = coordinates.size
+                        positionOnScreen = coordinates.positionOnScreen()
+                    }
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragEnd = {
+                                if (positionOnScreen.x + fabSize.width / 2 >= layoutSize.width / 2) {
+                                    readButtonPosition.set(FabPosition.End.toString())
+                                } else {
+                                    readButtonPosition.set(FabPosition.Start.toString())
+                                }
+                                offsetX = 0f
+                            },
+                        ) { change, dragAmount ->
+                            change.consume()
+                            offsetX += dragAmount
+                        }
+                    },
+                // KMK <--
             ) {
                 ExtendedFloatingActionButton(
                     text = {
@@ -941,7 +1026,15 @@ private fun MangaScreenLargeImpl(
             }
         },
         // KMK -->
+        floatingActionButtonPosition = if (fabPosition == FabPosition.End.toString()) {
+            FabPosition.End
+        } else {
+            FabPosition.Start
+        },
         modifier = Modifier
+            .onGloballyPositioned { coordinates ->
+                layoutSize = coordinates.size
+            }
             .haze(
                 state = hazeState,
                 style = HazeStyle(
@@ -975,19 +1068,16 @@ private fun MangaScreenLargeImpl(
                         MangaInfoBox(
                             isTabletUi = true,
                             appBarPadding = contentPadding.calculateTopPadding(),
-                            title = state.manga.title,
-                            author = state.manga.author,
-                            artist = state.manga.artist,
+                            manga = state.manga,
                             sourceName = remember { state.source.getNameForMangaInfo(state.mergedData?.sources) },
                             isStubSource = remember { state.source is StubSource },
-                            coverDataProvider = { state.manga },
-                            status = state.manga.status,
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
                             // KMK -->
                             librarySearch = librarySearch,
                             onSourceClick = onSourceClick,
                             onCoverLoaded = onCoverLoaded,
+                            coverRatio = coverRatio,
                             // KMK <--
                         )
                         MangaActionRow(
@@ -1006,6 +1096,7 @@ private fun MangaScreenLargeImpl(
                             // SY <--
                             // KMK -->
                             status = state.manga.status,
+                            interval = state.manga.fetchInterval,
                             // KMK <--
                         )
                         // SY -->
@@ -1124,6 +1215,7 @@ private fun MangaScreenLargeImpl(
 
                             sharedChapterItems(
                                 manga = state.manga,
+                                mergedData = state.mergedData,
                                 chapters = listItem,
                                 isAnyChapterSelected = chapters.fastAny { it.selected },
                                 chapterSwipeStartAction = chapterSwipeStartAction,
@@ -1188,6 +1280,7 @@ private fun SharedMangaBottomActionMenu(
 
 private fun LazyListScope.sharedChapterItems(
     manga: Manga,
+    mergedData: MergedMangaData?,
     chapters: List<ChapterList>,
     isAnyChapterSelected: Boolean,
     chapterSwipeStartAction: LibraryPreferences.ChapterSwipeAction,
@@ -1259,7 +1352,8 @@ private fun LazyListScope.sharedChapterItems(
                     read = item.chapter.read,
                     bookmark = item.chapter.bookmark,
                     selected = item.selected,
-                    downloadIndicatorEnabled = !isAnyChapterSelected && !manga.isLocal(),
+                    downloadIndicatorEnabled =
+                    !isAnyChapterSelected && !(mergedData?.manga?.get(item.chapter.mangaId) ?: manga).isLocal(),
                     downloadStateProvider = { item.downloadState },
                     downloadProgressProvider = { item.downloadProgress },
                     chapterSwipeStartAction = chapterSwipeStartAction,

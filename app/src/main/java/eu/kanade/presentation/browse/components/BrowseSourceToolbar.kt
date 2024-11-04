@@ -25,6 +25,7 @@ import exh.source.anyIs
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.LocalSource
 
@@ -43,6 +44,7 @@ fun BrowseSourceToolbar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     // KMK -->
     toggleSelectionMode: () -> Unit,
+    isRunning: Boolean,
     // KMK <--
 ) {
     // Avoid capturing unstable source in actions lambda
@@ -77,7 +79,7 @@ fun BrowseSourceToolbar(
                             )
                         }
                         // KMK -->
-                        add(bulkSelectionButton(toggleSelectionMode))
+                        add(bulkSelectionButton(isRunning, toggleSelectionMode))
                         // KMK <--
                         if (isLocalSource) {
                             if (isConfigurableSource && displayMode != null) {
@@ -113,20 +115,6 @@ fun BrowseSourceToolbar(
                                     ),
                                 )
                             }
-                            // KMK -->
-//                            add(
-//                                AppBar.OverflowAction(
-//                                    title = stringResource(MR.strings.pref_invalidate_download_cache),
-//                                    onClick = { },
-//                                ),
-//                            )
-//                            add(
-//                                AppBar.OverflowAction(
-//                                    title = stringResource(MR.strings.pref_clean_invalid_downloads),
-//                                    onClick = { },
-//                                ),
-//                            )
-                            // KMK <--
                         }
                         // SY <--
                         if (isConfigurableSource) {
@@ -152,6 +140,15 @@ fun BrowseSourceToolbar(
                     selectingDisplayMode = false
                     onDisplayModeChange(LibraryDisplayMode.ComfortableGrid)
                 }
+                // KMK -->
+                RadioMenuItem(
+                    text = { Text(text = stringResource(KMR.strings.action_display_comfortable_grid_panorama)) },
+                    isChecked = displayMode == LibraryDisplayMode.ComfortableGridPanorama,
+                ) {
+                    selectingDisplayMode = false
+                    onDisplayModeChange(LibraryDisplayMode.ComfortableGridPanorama)
+                }
+                // KMK <--
                 RadioMenuItem(
                     text = { Text(text = stringResource(MR.strings.action_display_grid)) },
                     isChecked = displayMode == LibraryDisplayMode.CompactGrid,

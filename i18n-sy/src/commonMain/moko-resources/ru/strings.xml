@@ -88,7 +88,9 @@
     <string name="gallery_updater_stats_time">Такое количество галерей было проверено за:\n- час: %1$d\n- 6 часов: %2$d\n- 12 часов: %3$d\n- день: %4$d\n- 2 дня: %5$d\n- неделю: %6$d\n- месяц: %7$d\n- год: %8$d</string>
     <!-- EH Settings Upload Dialogs -->
     <string name="settings_profile_note">Примечание профиля настроек</string>
-    <string name="settings_profile_note_message">Приложение добавит новый профиль настроек на E/ExHentai для оптимизации производительности приложения. Убедитесь, что на обоих сайтах не больше трёх профилей.\n\nНажать кнопку «ОК» если вы понятие не имеете, что такое профили настроек.</string>
+    <string name="settings_profile_note_message">Приложение добавит новый профиль настроек на E/ExHentai для оптимизации производительности приложения. Убедитесь, что на обоих сайтах не больше трёх профилей.
+\n
+\nНажмите на кнопку «ОК» если вы понятие не имеете, что такое профили настроек.</string>
     <string name="eh_settings_successfully_uploaded">Настройки успешно загружены!</string>
     <string name="eh_settings_configuration_failed">Настройка не удалась!</string>
     <string name="eh_settings_configuration_failed_message">В процессе настройки произошла ошибка: %1$s</string>
@@ -176,8 +178,8 @@
     <string name="pref_feed_position_summery">Поместить вкладку «Лента» на место первой вкладки в «Поисковик»? Это сделает её вкладкой по умолчанию при открытии «Поисковик». Не рекомендуется, если вы используете ограниченные сети(Моб. данные)</string>
     <string name="pref_source_source_filtering">Фильтровать источники по категориям</string>
     <string name="pref_source_source_filtering_summery">Фильтровать источники, которые находятся в категориях, чтобы те не попадали под языковую фильтрацию</string>
-    <string name="pref_source_navigation">Убрать кнопку (Последняя)</string>
-    <string name="pref_source_navigation_summery">Убирает кнопку «Последняя» возле источников. Взамен при нажатии на источник отображаются вкладки «Последняя» и «Поисковик»</string>
+    <string name="pref_source_navigation">Убрать кнопку (Последние)</string>
+    <string name="pref_source_navigation_summery">Убирает кнопку «Последние» возле источников. Взамен при нажатии на источник отображаются вкладки «Последние» и «Поисковик»</string>
     <string name="pref_local_source_hidden_folders">Просмотр скрытых папок</string>
     <string name="pref_local_source_hidden_folders_summery">Дать разрешение локальному источнику просматривать скрытые папки</string>
     <!-- Backup settings -->
@@ -393,7 +395,12 @@
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Сортировка тэгов</string>
     <string name="tag_sorting">Сортировка тэгов</string>
-    <string name="action_add_tags_message">ВАЖНО! Тэги должны быть точными, частичных совпадений нет. Вы не можете добавить тэг netorare, чтобы отфильтровать, например, женский тэг netorare и так далее! \nСтиль тегов должен быть таким: \nfemale: sole female\nПоддерживается добавление нескольких вариантов одного и того же тега. Например: \ntag: netorare для NHentai, \nfemale: netorare для E-Hentai и т.д!</string>
+    <string name="action_add_tags_message">ВАЖНО! Тэги должны быть точными, частичных совпадений нет. Вы не можете добавить тэг \"netorare\", чтобы отфильтровать, например, тэг \"female: netorare\" и так далее!
+\nСтиль тегов должен быть таким:
+\n\"female: sole female\"
+\nПоддерживается добавление нескольких вариантов одного и того же тега. Например:
+\n\"tag: netorare\" для NHentai,
+\n\"female: netorare\" для E-Hentai и т.д!</string>
     <string name="action_edit_tags">Редактировать тэги</string>
     <string name="information_empty_tags">Нет тэгов. Нажмите кнопку «Добавить» чтобы создать тэг для сортировки библиотеки</string>
     <string name="error_tag_exists">Этот тэг уже существует!</string>
@@ -480,6 +487,7 @@
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">Добавить галереи</string>
+    <string name="md_batch_add_description">Пример:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">Пример:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nТакже поддерживаются экспортированные данные на E-Hentai\n</string>
     <string name="eh_batch_add_title">Ввести в этой области URL-адрес галерей для добавления (Разделённые новой строкой):</string>
     <string name="eh_batch_add_button">Добавить</string>
@@ -648,4 +656,18 @@
     <string name="action_copy_second_page">Копировать вторую страницу</string>
     <string name="only_show_updated_entries">Показывать серии только с новыми главами</string>
     <string name="action_copy_combined_page">Копировать объединенную страницу</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="wsrv">wsrv.nl</string>
+    <string name="eh_image_quality_1280">1280x</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+    <string name="eh_image_quality_980">980x</string>
+    <string name="eh_image_quality_1600">1600x</string>
+    <string name="eh_image_quality_2400">2400x</string>
+    <string name="eh_image_quality_780">780x</string>
+    <string name="syncyomi">SyncYomi</string>
+    <string name="aes_256">AES 256</string>
+    <string name="aes_128">AES 128</string>
+    <string name="add_tags">Добавить тэги</string>
+    <string name="multi_tags_comma_separated">Введите тэг(и), разделёнными запятыми.</string>
+    <string name="alt_titles">Альт. названия</string>
 </resources>

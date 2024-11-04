@@ -1,5 +1,6 @@
 package eu.kanade.domain.ui
 
+import androidx.compose.material3.FabPosition
 import com.materialkolor.PaletteStyle
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.domain.ui.model.TabletUiMode
@@ -32,6 +33,8 @@ class UiPreferences(
     // KMK -->
     fun colorTheme() = preferenceStore.getInt("pref_color_theme", 0xFFDF0090.toInt())
 
+    fun customThemeStyle() = preferenceStore.getEnum("pref_custom_theme_style_key", PaletteStyle.Fidelity)
+
     fun themeCoverBased() = preferenceStore.getBoolean("pref_theme_cover_based_key", true)
 
     fun themeCoverBasedStyle() = preferenceStore.getEnum("pref_theme_cover_based_style_key", PaletteStyle.Vibrant)
@@ -59,6 +62,14 @@ class UiPreferences(
     fun relatedMangasInOverflow() = preferenceStore.getBoolean("related_mangas_in_overflow", false)
 
     fun showHomeOnRelatedMangas() = preferenceStore.getBoolean("show_home_on_related_mangas", true)
+
+    fun readButtonPosition() = preferenceStore.getString("reading_button_position", FabPosition.End.toString())
+
+    fun usePanoramaCoverFlow() = preferenceStore.getBoolean("use_panorama_cover_flow", false)
+
+    fun usePanoramaCoverAlways() = preferenceStore.getBoolean("use_panorama_cover_grid", true)
+
+    fun usePanoramaCoverMangaInfo() = preferenceStore.getBoolean("use_panorama_cover_manga_info", false)
     // KMK <--
 
     fun recommendsInOverflow() = preferenceStore.getBoolean("recommends_in_overflow", false)

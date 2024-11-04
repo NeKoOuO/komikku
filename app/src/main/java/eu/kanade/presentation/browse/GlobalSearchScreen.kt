@@ -13,7 +13,7 @@ import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
-import eu.kanade.presentation.components.SelectionToolbar
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
@@ -39,6 +39,7 @@ fun GlobalSearchScreen(
     onLongClickItem: (Manga) -> Unit,
     // KMK -->
     bulkFavoriteScreenModel: BulkFavoriteScreenModel,
+    hasPinnedSources: Boolean,
     // KMK <--
 ) {
     // KMK -->
@@ -49,23 +50,29 @@ fun GlobalSearchScreen(
         topBar = { scrollBehavior ->
             // KMK -->
             if (bulkFavoriteState.selectionMode) {
-                SelectionToolbar(
+                BulkSelectionToolbar(
                     selectedCount = bulkFavoriteState.selection.size,
+                    isRunning = bulkFavoriteState.isRunning,
                     onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                    onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                    onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                     onSelectAll = {
                         state.filteredItems.forEach { (_, result) ->
                             when (result) {
                                 is SearchItemResult.Success -> {
                                     result.result.forEach { manga ->
-                                        if (!bulkFavoriteState.selection.contains(manga)) {
-                                            bulkFavoriteScreenModel.select(manga)
-                                        }
+                                        bulkFavoriteScreenModel.select(manga)
                                     }
                                 }
                                 else -> {}
                             }
                         }
+                    },
+                    onReverseSelection = {
+                        bulkFavoriteScreenModel.reverseSelection(
+                            state.filteredItems.values
+                                .filterIsInstance<SearchItemResult.Success>()
+                                .flatMap { it.result },
+                        )
                     },
                 )
             } else {
@@ -84,6 +91,8 @@ fun GlobalSearchScreen(
                     scrollBehavior = scrollBehavior,
                     // KMK -->
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                    isRunning = bulkFavoriteState.isRunning,
+                    hasPinnedSources = hasPinnedSources,
                     // KMK <--
                 )
             }

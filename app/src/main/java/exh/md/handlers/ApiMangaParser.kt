@@ -41,6 +41,9 @@ class ApiMangaParser(
         input: MangaDto,
         simpleChapters: List<String>,
         statistics: StatisticsMangaDto?,
+        coverFileName: String?,
+        coverQuality: String,
+        altTitlesInDesc: Boolean,
     ): SManga {
         val mangaId = getManga.await(manga.url, sourceId)?.id
         val metadata = if (mangaId != null) {
@@ -50,7 +53,7 @@ class ApiMangaParser(
             newMetaInstance()
         }
 
-        parseIntoMetadata(metadata, input, simpleChapters, statistics)
+        parseIntoMetadata(metadata, input, simpleChapters, statistics, coverFileName, coverQuality, altTitlesInDesc)
         if (mangaId != null) {
             metadata.mangaId = mangaId
             insertFlatMetadata.await(metadata.flatten())
@@ -64,6 +67,9 @@ class ApiMangaParser(
         mangaDto: MangaDto,
         simpleChapters: List<String>,
         statistics: StatisticsMangaDto?,
+        coverFileName: String?,
+        coverQuality: String,
+        altTitlesInDesc: Boolean,
     ) {
         with(metadata) {
             try {
@@ -73,20 +79,25 @@ class ApiMangaParser(
                 altTitles = mangaAttributesDto.altTitles.mapNotNull { it[lang] }.nullIfEmpty()
 
                 val mangaRelationshipsDto = mangaDto.data.relationships
-                mangaRelationshipsDto
-                    .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
-                    ?.attributes
-                    ?.fileName
-                    ?.let { coverFileName ->
-                        cover = MdUtil.cdnCoverUrl(mangaDto.data.id, coverFileName)
-                    }
+                cover = if (!coverFileName.isNullOrEmpty()) {
+                    MdUtil.cdnCoverUrl(mangaDto.data.id, "$coverFileName$coverQuality")
+                } else {
+                    mangaRelationshipsDto
+                        .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
+                        ?.attributes
+                        ?.fileName
+                        ?.let { coverFileName ->
+                            MdUtil.cdnCoverUrl(mangaDto.data.id, "$coverFileName$coverQuality")
+                        }
+                }
+                val rawDesc = MdUtil.getFromLangMap(
+                    langMap = mangaAttributesDto.description.asMdMap(),
+                    currentLang = lang,
+                    originalLanguage = mangaAttributesDto.originalLanguage,
+                ).orEmpty()
 
                 description = MdUtil.cleanDescription(
-                    MdUtil.getFromLangMap(
-                        langMap = mangaAttributesDto.description.asMdMap(),
-                        currentLang = lang,
-                        originalLanguage = mangaAttributesDto.originalLanguage,
-                    ).orEmpty(),
+                    if (altTitlesInDesc) MdUtil.addAltTitleToDesc(rawDesc, altTitles) else rawDesc,
                 )
 
                 authors = mangaRelationshipsDto.filter { relationshipDto ->

@@ -51,7 +51,7 @@ object SettingsAppearanceScreen : SearchableSettings {
         return listOf(
             getThemeGroup(uiPreferences = uiPreferences),
             // KMK -->
-            getDetailsPageThemeGroup(uiPreferences = uiPreferences),
+            getMangaInfoThemeGroup(uiPreferences = uiPreferences),
             // KMK <--
             getDisplayGroup(uiPreferences = uiPreferences),
             // SY -->
@@ -106,40 +106,10 @@ object SettingsAppearanceScreen : SearchableSettings {
                     subtitle = stringResource(KMR.strings.custom_color_description),
                     onClick = { navigator.push(AppCustomThemeColorPickerScreen()) },
                 ),
-                // KMK <--
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = amoledPref,
-                    title = stringResource(MR.strings.pref_dark_theme_pure_black),
-                    enabled = themeMode != ThemeMode.LIGHT,
-                    onValueChanged = {
-                        (context as? Activity)?.let { ActivityCompat.recreate(it) }
-                        true
-                    },
-                ),
-            ),
-        )
-    }
-
-    // KMK -->
-    @Composable
-    private fun getDetailsPageThemeGroup(
-        uiPreferences: UiPreferences,
-    ): Preference.PreferenceGroup {
-        val scope = rememberCoroutineScope()
-        val detailsPageThemeCoverBased by remember {
-            Injekt.get<UiPreferences>().themeCoverBased().asState(scope)
-        }
-        return Preference.PreferenceGroup(
-            title = stringResource(KMR.strings.pref_details_page_theme),
-            preferenceItems = persistentListOf(
-                Preference.PreferenceItem.SwitchPreference(
-                    pref = uiPreferences.themeCoverBased(),
-                    title = stringResource(KMR.strings.pref_theme_cover_based),
-                ),
                 Preference.PreferenceItem.ListPreference(
-                    pref = uiPreferences.themeCoverBasedStyle(),
-                    title = stringResource(KMR.strings.pref_theme_cover_based_style),
-                    enabled = detailsPageThemeCoverBased,
+                    pref = uiPreferences.customThemeStyle(),
+                    title = stringResource(KMR.strings.pref_custom_theme_style),
+                    enabled = appTheme == AppTheme.CUSTOM,
                     entries = PaletteStyle.entries
                         .associateWith {
                             when (it) {
@@ -165,6 +135,75 @@ object SettingsAppearanceScreen : SearchableSettings {
                             }
                         }
                         .toImmutableMap(),
+                    onValueChanged = {
+                        (context as? Activity)?.let { ActivityCompat.recreate(it) }
+                        true
+                    },
+                ),
+                // KMK <--
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = amoledPref,
+                    title = stringResource(MR.strings.pref_dark_theme_pure_black),
+                    enabled = themeMode != ThemeMode.LIGHT,
+                    onValueChanged = {
+                        (context as? Activity)?.let { ActivityCompat.recreate(it) }
+                        true
+                    },
+                ),
+            ),
+        )
+    }
+
+    // KMK -->
+    @Composable
+    private fun getMangaInfoThemeGroup(
+        uiPreferences: UiPreferences,
+    ): Preference.PreferenceGroup {
+        val scope = rememberCoroutineScope()
+        val mangaInfoThemeCoverBased by remember {
+            Injekt.get<UiPreferences>().themeCoverBased().asState(scope)
+        }
+        return Preference.PreferenceGroup(
+            title = stringResource(KMR.strings.pref_manga_info),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.themeCoverBased(),
+                    title = stringResource(KMR.strings.pref_theme_cover_based),
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    pref = uiPreferences.themeCoverBasedStyle(),
+                    title = stringResource(KMR.strings.pref_theme_cover_based_style),
+                    enabled = mangaInfoThemeCoverBased,
+                    entries = PaletteStyle.entries
+                        .associateWith {
+                            when (it) {
+                                PaletteStyle.TonalSpot ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_tonalspot)
+                                PaletteStyle.Neutral ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_neutral)
+                                PaletteStyle.Vibrant ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_vibrant)
+                                PaletteStyle.Expressive ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_expressive)
+                                PaletteStyle.Rainbow ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_rainbow)
+                                PaletteStyle.FruitSalad ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_fruitsalad)
+                                PaletteStyle.Monochrome ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_monochrome)
+                                PaletteStyle.Fidelity ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_fidelity)
+                                PaletteStyle.Content ->
+                                    stringResource(KMR.strings.pref_theme_cover_based_style_content)
+                                else -> it.name
+                            }
+                        }
+                        .toImmutableMap(),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.usePanoramaCoverMangaInfo(),
+                    title = stringResource(KMR.strings.pref_panorama_cover),
+                    subtitle = stringResource(KMR.strings.pref_panorama_cover_summary),
                 ),
             ),
         )
@@ -238,6 +277,13 @@ object SettingsAppearanceScreen : SearchableSettings {
         return Preference.PreferenceGroup(
             stringResource(SYMR.strings.pref_category_fork),
             preferenceItems = persistentListOf(
+                // KMK -->
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = uiPreferences.usePanoramaCoverFlow(),
+                    title = stringResource(KMR.strings.pref_panorama_cover_flow),
+                    subtitle = stringResource(KMR.strings.pref_panorama_cover_flow_summary),
+                ),
+                // KMK <--
                 Preference.PreferenceItem.SwitchPreference(
                     pref = uiPreferences.expandFilters(),
                     title = stringResource(SYMR.strings.toggle_expand_search_filters),

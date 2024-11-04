@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.ui.browse.bulkSelectionButton
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
@@ -29,6 +30,7 @@ fun BrowseSourceSimpleToolbar(
     scrollBehavior: TopAppBarScrollBehavior,
     // KMK -->
     toggleSelectionMode: () -> Unit,
+    isRunning: Boolean,
     // KMK <--
 ) {
     AppBar(
@@ -51,7 +53,7 @@ fun BrowseSourceSimpleToolbar(
                         onClick = { selectingDisplayMode = true },
                     ),
                     // KMK -->
-                    bulkSelectionButton(toggleSelectionMode),
+                    bulkSelectionButton(isRunning, toggleSelectionMode),
                     // KMK <--
                 ),
             )
@@ -66,6 +68,13 @@ fun BrowseSourceSimpleToolbar(
                 ) {
                     selectingDisplayMode = false
                     onDisplayModeChange(LibraryDisplayMode.ComfortableGrid)
+                }
+                RadioMenuItem(
+                    text = { Text(text = stringResource(KMR.strings.action_display_comfortable_grid_panorama)) },
+                    isChecked = displayMode == LibraryDisplayMode.ComfortableGridPanorama,
+                ) {
+                    selectingDisplayMode = false
+                    onDisplayModeChange(LibraryDisplayMode.ComfortableGridPanorama)
                 }
                 RadioMenuItem(
                     text = { Text(text = stringResource(MR.strings.action_display_grid)) },

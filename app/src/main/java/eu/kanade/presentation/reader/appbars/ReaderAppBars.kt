@@ -73,8 +73,8 @@ fun ReaderAppBars(
     onClickTopAppBar: () -> Unit,
     // bookmarked: Boolean,
     // onToggleBookmarked: () -> Unit,
-    onOpenInBrowser: (() -> Unit)?,
     onOpenInWebView: (() -> Unit)?,
+    onOpenInBrowser: (() -> Unit)?,
     onShare: (() -> Unit)?,
 
     viewer: Viewer?,
@@ -84,7 +84,7 @@ fun ReaderAppBars(
     enabledPrevious: Boolean,
     currentPage: Int,
     totalPages: Int,
-    onSliderValueChange: (Int) -> Unit,
+    onPageIndexChange: (Int) -> Unit,
 
     readingMode: ReadingMode,
     onClickReadingMode: () -> Unit,
@@ -154,7 +154,7 @@ fun ReaderAppBars(
                 enabledPrevious = enabledPrevious,
                 currentPage = currentPage,
                 totalPages = totalPages,
-                onSliderValueChange = onSliderValueChange,
+                onPageIndexChange = onPageIndexChange,
                 isVerticalSlider = true,
                 currentPageText = currentPageText,
             )
@@ -182,7 +182,7 @@ fun ReaderAppBars(
                 enabledPrevious = enabledPrevious,
                 currentPage = currentPage,
                 totalPages = totalPages,
-                onSliderValueChange = onSliderValueChange,
+                onPageIndexChange = onPageIndexChange,
                 isVerticalSlider = true,
                 currentPageText = currentPageText,
             )
@@ -235,18 +235,18 @@ fun ReaderAppBars(
                                                 onClick = onToggleBookmarked,
                                             ),
                                         )
-                                        onOpenInBrowser?.let {
-                                            add(
-                                                AppBar.OverflowAction(
-                                                    title = stringResource(MR.strings.action_open_in_browser),
-                                                    onClick = it,
-                                                ),
-                                            )
-                                        }
                                         onOpenInWebView?.let {
                                             add(
                                                 AppBar.OverflowAction(
                                                     title = stringResource(MR.strings.action_open_in_web_view),
+                                                    onClick = it,
+                                                ),
+                                            )
+                                        }
+                                        onOpenInBrowser?.let {
+                                            add(
+                                                AppBar.OverflowAction(
+                                                    title = stringResource(MR.strings.action_open_in_browser),
                                                     onClick = it,
                                                 ),
                                             )
@@ -311,12 +311,11 @@ fun ReaderAppBars(
                             enabledPrevious = enabledPrevious,
                             currentPage = currentPage,
                             totalPages = totalPages,
-                            onSliderValueChange = onSliderValueChange,
+                            onPageIndexChange = onPageIndexChange,
                             isVerticalSlider = false,
                             currentPageText = currentPageText,
                         )
                     }
-
                     BottomReaderBar(
                         // SY -->
                         enabledButtons = enabledButtons,
@@ -334,10 +333,8 @@ fun ReaderAppBars(
                         dualPageSplitEnabled = dualPageSplitEnabled,
                         doublePages = doublePages,
                         onClickChapterList = onClickChapterList,
-                        // KMK -->
-                        onClickBrowser = onOpenInBrowser,
-                        // KMK <--
                         onClickWebView = onOpenInWebView,
+                        onClickBrowser = onOpenInBrowser,
                         onClickShare = onShare,
                         onClickPageLayout = onClickPageLayout,
                         onClickShiftPage = onClickShiftPage,

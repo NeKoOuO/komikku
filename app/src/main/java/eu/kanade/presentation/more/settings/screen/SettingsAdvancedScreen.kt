@@ -221,16 +221,6 @@ object SettingsAdvancedScreen : SearchableSettings {
                         context.toast(MR.strings.download_cache_invalidated)
                     },
                 ),
-                // KMK -->
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(KMR.strings.pref_clean_invalid_downloads),
-                    subtitle = stringResource(KMR.strings.pref_clean_invalid_downloads_summary),
-                    onClick = {
-                        Injekt.get<DownloadCache>().invalidateCache()
-                        context.toast(KMR.strings.invalid_downloads_cleaned)
-                    },
-                ),
-                // KMK <--
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_clear_database),
                     subtitle = stringResource(MR.strings.pref_clear_database_summary),
@@ -312,6 +302,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         try {
                             // OkHttp checks for valid values internally
                             Headers.Builder().add("User-Agent", it)
+                            context.toast(MR.strings.requires_app_restart)
                         } catch (_: IllegalArgumentException) {
                             context.toast(MR.strings.error_user_agent_string_invalid)
                             return@EditTextPreference false
@@ -396,6 +387,10 @@ object SettingsAdvancedScreen : SearchableSettings {
                     onClick = {
                         chooseColorProfile.launch(arrayOf("*/*"))
                     },
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = basePreferences.alwaysUseSSIVToDecode(),
+                    title = stringResource(MR.strings.pref_always_use_ssiv_to_decode),
                 ),
             ),
         )

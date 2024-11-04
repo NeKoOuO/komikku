@@ -43,7 +43,7 @@ import tachiyomi.domain.manga.interactor.GetMergedManga
 import tachiyomi.domain.manga.interactor.GetMergedMangaById
 import tachiyomi.domain.manga.interactor.GetMergedMangaForDownloading
 import tachiyomi.domain.manga.interactor.GetMergedReferencesById
-import tachiyomi.domain.manga.interactor.GetReadMangaNotInLibrary
+import tachiyomi.domain.manga.interactor.GetReadMangaNotInLibraryView
 import tachiyomi.domain.manga.interactor.GetSearchMetadata
 import tachiyomi.domain.manga.interactor.GetSearchTags
 import tachiyomi.domain.manga.interactor.GetSearchTitles
@@ -69,7 +69,7 @@ import tachiyomi.domain.source.interactor.GetSavedSearchBySourceIdFeed
 import tachiyomi.domain.source.interactor.GetSavedSearchGlobalFeed
 import tachiyomi.domain.source.interactor.InsertFeedSavedSearch
 import tachiyomi.domain.source.interactor.InsertSavedSearch
-import tachiyomi.domain.source.interactor.SwapFeedOrder
+import tachiyomi.domain.source.interactor.ReorderFeed
 import tachiyomi.domain.source.repository.FeedSavedSearchRepository
 import tachiyomi.domain.source.repository.SavedSearchRepository
 import tachiyomi.domain.track.interactor.IsTrackUnfollowed
@@ -104,7 +104,7 @@ class SYDomainModule : InjektModule {
         addFactory { GetPagePreviews(get(), get()) }
         addFactory { SearchEngine() }
         addFactory { IsTrackUnfollowed() }
-        addFactory { GetReadMangaNotInLibrary(get()) }
+        addFactory { GetReadMangaNotInLibraryView(get()) }
 
         // Required for [MetadataSource]
         addFactory<MetadataSource.GetMangaId> { GetManga(get()) }
@@ -157,7 +157,7 @@ class SYDomainModule : InjektModule {
         addFactory { GetSavedSearchGlobalFeed(get()) }
         addFactory { GetSavedSearchBySourceIdFeed(get()) }
         // KMK -->
-        addFactory { SwapFeedOrder(get()) }
+        addFactory { ReorderFeed(get()) }
         // KMK <--
 
         addSingletonFactory<CustomMangaRepository> { CustomMangaRepositoryImpl(get<Application>()) }

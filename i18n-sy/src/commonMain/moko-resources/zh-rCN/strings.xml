@@ -126,7 +126,7 @@
     <string name="data_saver_ignore_jpeg">忽略 JPEG 图像</string>
     <string name="data_saver_ignore_gif">忽略 Gif 动画</string>
     <string name="data_saver_image_quality">图像质量</string>
-    <string name="data_saver_image_quality_summary">更高值意味着更高的保存的图像质量，但这意味着更大的文件大小，80\% 可以很好地平衡图片质量和文件大小</string>
+    <string name="data_saver_image_quality_summary">更高值意味着更高的保存的图像质量，但这意味着更大的文件大小，80%可以很好地平衡图片质量和文件大小</string>
     <string name="data_saver_image_format">压缩为 JPEG</string>
     <string name="data_saver_image_format_summary_on">JPEG 文件的大小要比 Webp 小得多（意味着节省了更多的流量），但它也会使图像损失更多的质量。\n目前压缩为 JPEG</string>
     <string name="data_saver_image_format_summary_off">JPEG 文件的大小要比 Webp 小得多（意味着节省了更多的流量），但它也会使图像损失更多的质量。\n目前压缩为 Webp</string>
@@ -432,6 +432,7 @@
     <!-- Gallery Adder -->
     <!-- Batch Add -->
     <string name="eh_batch_add">批量导入</string>
+    <string name="md_batch_add_description">示例:\n\nhttps://mangadex.org/title/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0/solo-leveling\nhttps://mangadex.org/title/77bee52c-d2d6-44ad-a33a-1734c1fe696a\n\n</string>
     <string name="eh_batch_add_description">示例：\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\n它还支持 E-H 访问过的导出数据\n</string>
     <string name="eh_batch_add_title">输入要添加的画廊（每行一个）：</string>
     <string name="eh_batch_add_button">添加画廊</string>
@@ -630,4 +631,31 @@
     <string name="non_h">非色情</string>
     <string name="batch_add_ok">成功：</string>
     <string name="batch_add_error">错误：</string>
+    <string name="action_copy_first_page">复制第一页</string>
+    <string name="eh_image_quality_1600">1600x</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+    <string name="eh_image_quality_2400">2400x</string>
+    <string name="eh_image_quality_1280">1280x</string>
+    <string name="eh_image_quality_980">980x</string>
+    <string name="eh_image_quality_780">780x</string>
+    <string name="wsrv">wsrv.nl</string>
+    <string name="action_copy_second_page">复制第二页</string>
+    <string name="action_copy_combined_page">复制合并页</string>
+    <string name="only_show_updated_entries">仅显示包含新章节的条目</string>
+    <string name="url">Url</string>
+    <string name="alt_titles">别名</string>
+    <string name="add_tags">添加标签</string>
+    <string name="multi_tags_comma_separated">输入标签，用逗号隔开。</string>
+    <string name="aes_128">AES 128</string>
+    <string name="aged">年龄限制</string>
+    <string name="anilist_id">Anilist id</string>
+    <string name="kitsu_id">Kitsu id</string>
+    <string name="mal_id">Mal id</string>
+    <string name="anime_planet_id">Anime planet id</string>
+    <string name="syncyomi">SyncYomi</string>
+    <string name="aes_256">AES 256</string>
+    <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
+    <string name="id">Id</string>
+    <string name="token">Token</string>
 </resources>

@@ -700,7 +700,7 @@ class ReaderViewModel @JvmOverloads constructor(
                 // SY <--
                 readerChapter.chapter.read = true
                 // SY -->
-                if (readerChapter.chapter.chapter_number > 0 && readerPreferences.markReadDupe().get()) {
+                if (readerChapter.chapter.chapter_number >= 0 && readerPreferences.markReadDupe().get()) {
                     getChaptersByMangaId.await(manga!!.id).sortedByDescending { it.sourceOrder }
                         .filter {
                             it.id != readerChapter.chapter.id &&
@@ -1338,6 +1338,7 @@ class ReaderViewModel @JvmOverloads constructor(
         @IntRange(from = -100, to = 100) val brightnessOverlayValue: Int = 0,
 
         // SY -->
+        /** for display page number in double-page mode */
         val currentPageText: String = "",
         val meta: RaisedSearchMetadata? = null,
         val mergedManga: Map<Long, Manga>? = null,

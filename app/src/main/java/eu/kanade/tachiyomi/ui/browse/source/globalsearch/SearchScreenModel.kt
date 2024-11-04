@@ -70,6 +70,13 @@ abstract class SearchScreenModel(
                 mutableState.update { it.copy(onlyShowHasResults = state) }
             }
         }
+        // KMK -->
+        screenModelScope.launch {
+            preferences.globalSearchPinnedState().changes().collectLatest { state ->
+                mutableState.update { it.copy(sourceFilter = state) }
+            }
+        }
+        // KMK <--
     }
 
     @Composable
@@ -94,6 +101,16 @@ abstract class SearchScreenModel(
             )
     }
 
+    // KMK -->
+    fun hasPinnedSources(): Boolean = getEnabledSources().any { "${it.id}" in pinnedSources }
+
+    fun shouldPinnedSourcesHidden() {
+        if (!hasPinnedSources()) {
+            preferences.globalSearchPinnedState().set(SourceFilter.All)
+        }
+    }
+    // KMK <--
+
     private fun getSelectedSources(): List<CatalogueSource> {
         val enabledSources = getEnabledSources()
 
@@ -117,7 +134,7 @@ abstract class SearchScreenModel(
     }
 
     fun setSourceFilter(filter: SourceFilter) {
-        mutableState.update { it.copy(sourceFilter = filter) }
+        preferences.globalSearchPinnedState().set(filter)
         search()
     }
 

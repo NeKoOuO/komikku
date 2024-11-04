@@ -44,7 +44,7 @@ import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
-import eu.kanade.presentation.components.SelectionToolbar
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
@@ -62,6 +62,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
+import exh.source.isEhBasedSource
 import exh.ui.ifSourcesLoaded
 import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.channels.Channel
@@ -175,16 +176,18 @@ data class BrowseSourceScreen(
                 Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
                     // KMK -->
                     if (bulkFavoriteState.selectionMode) {
-                        SelectionToolbar(
+                        BulkSelectionToolbar(
                             selectedCount = bulkFavoriteState.selection.size,
+                            isRunning = bulkFavoriteState.isRunning,
                             onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                            onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                            onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                             onSelectAll = {
                                 state.mangaDisplayingList.forEach { manga ->
-                                    if (!bulkFavoriteState.selection.contains(manga)) {
-                                        bulkFavoriteScreenModel.select(manga)
-                                    }
+                                    bulkFavoriteScreenModel.select(manga)
                                 }
+                            },
+                            onReverseSelection = {
+                                bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
                             },
                         )
                     } else {
@@ -193,7 +196,12 @@ data class BrowseSourceScreen(
                             searchQuery = state.toolbarQuery,
                             onSearchQueryChange = screenModel::setToolbarQuery,
                             source = screenModel.source,
-                            displayMode = screenModel.displayMode,
+                            displayMode = screenModel.displayMode
+                                // KMK -->
+                                .takeIf {
+                                    !screenModel.source.isEhBasedSource() || !screenModel.ehentaiBrowseDisplayMode
+                                },
+                            // KMK <--
                             onDisplayModeChange = { screenModel.displayMode = it },
                             navigateUp = navigateUp,
                             onWebViewClick = onWebViewClick,
@@ -202,6 +210,7 @@ data class BrowseSourceScreen(
                             onSearch = screenModel::search,
                             // KMK -->
                             toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                            isRunning = bulkFavoriteState.isRunning,
                             // KMK <--
                         )
                     }
@@ -252,7 +261,10 @@ data class BrowseSourceScreen(
                         }
                         if (/* SY --> */ state.filterable /* SY <-- */) {
                             FilterChip(
-                                selected = state.listing is Listing.Search,
+                                selected = state.listing is Listing.Search &&
+                                    // KMK -->
+                                    (state.listing as Listing.Search).savedSearchId == null,
+                                // KMK <--
                                 onClick = screenModel::openFilterSheet,
                                 leadingIcon = {
                                     Icon(
@@ -275,6 +287,24 @@ data class BrowseSourceScreen(
                                 },
                             )
                         }
+                        // KMK -->
+                        state.savedSearches.forEach { savedSearch ->
+                            FilterChip(
+                                selected = state.listing is Listing.Search &&
+                                    (state.listing as Listing.Search).savedSearchId == savedSearch.id,
+                                onClick = {
+                                    screenModel.onSavedSearch(savedSearch) {
+                                        context.toast(it)
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        text = savedSearch.name,
+                                    )
+                                },
+                            )
+                        }
+                        // KMK <--
                     }
 
                     HorizontalDivider()
@@ -282,11 +312,9 @@ data class BrowseSourceScreen(
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->
-            val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
-
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = pagingFlow.collectAsLazyPagingItems(),
+                mangaList = screenModel.mangaPagerFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
@@ -408,6 +436,9 @@ data class BrowseSourceScreen(
                         )
                         // SY <--
                     },
+                    // KMK -->
+                    duplicate = dialog.duplicate,
+                    // KMK <--
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {

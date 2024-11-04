@@ -19,7 +19,7 @@ import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceSimpleToolbar
 import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
-import eu.kanade.presentation.components.SelectionToolbar
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
@@ -69,16 +69,18 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
             topBar = { scrollBehavior ->
                 // KMK -->
                 if (bulkFavoriteState.selectionMode) {
-                    SelectionToolbar(
+                    BulkSelectionToolbar(
                         selectedCount = bulkFavoriteState.selection.size,
+                        isRunning = bulkFavoriteState.isRunning,
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                        onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
                             state.mangaDisplayingList.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga)) {
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                bulkFavoriteScreenModel.select(manga)
                             }
+                        },
+                        onReverseSelection = {
+                            bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
                         },
                     )
                 } else {
@@ -91,6 +93,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                         scrollBehavior = scrollBehavior,
                         // KMK -->
                         toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                        isRunning = bulkFavoriteState.isRunning,
                         // KMK <--
                     )
                 }
@@ -99,11 +102,9 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 SnackbarHost(hostState = snackbarHostState)
             },
         ) { paddingValues ->
-            val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
-
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = pagingFlow.collectAsLazyPagingItems(),
+                mangaList = screenModel.mangaPagerFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
@@ -170,6 +171,9 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                             dialog.manga.id,
                         )
                     },
+                    // KMK -->
+                    duplicate = dialog.duplicate,
+                    // KMK <--
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {

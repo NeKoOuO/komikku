@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -26,6 +27,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -133,10 +136,12 @@ class MangaScreen(
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
-        val screenModel =
-            rememberScreenModel { MangaScreenModel(context, mangaId, fromSource, smartSearchConfig != null) }
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val screenModel = rememberScreenModel {
+            MangaScreenModel(context, lifecycleOwner.lifecycle, mangaId, fromSource, smartSearchConfig != null)
+        }
 
-        val state by screenModel.state.collectAsState()
+        val state by screenModel.state.collectAsStateWithLifecycle()
 
         if (state is MangaScreenModel.State.Loading) {
             LoadingScreen()
@@ -252,6 +257,7 @@ class MangaScreen(
         // SY <--
 
         // KMK -->
+        val coverRatio = remember { mutableFloatStateOf(1f) }
         val hazeState = remember { HazeState() }
         // KMK <--
 
@@ -392,6 +398,7 @@ class MangaScreen(
             onCoverLoaded = {
                 if (screenModel.themeCoverBased || successState.manga.favorite) screenModel.setPaletteColor(it)
             },
+            coverRatio = coverRatio,
             onPaletteScreenClick = { navigator.push(PaletteScreen(successState.seedColor?.toArgb())) },
             hazeState = hazeState,
             // KMK <--
@@ -433,6 +440,9 @@ class MangaScreen(
                         migrateManga(navigator, dialog.duplicate, screenModel.manga!!.id)
                         // SY <--
                     },
+                    // KMK -->
+                    duplicate = dialog.duplicate,
+                    // KMK <--
                 )
             }
 
@@ -482,7 +492,7 @@ class MangaScreen(
                     )
                     // KMK <--
                     MangaCoverDialog(
-                        coverDataProvider = { manga!! },
+                        manga = manga!!,
                         snackbarHostState = sm.snackbarHostState,
                         isCustomCover = remember(manga) { manga!!.hasCustomCover() },
                         onShareClick = { sm.shareCover(context) },
@@ -527,6 +537,9 @@ class MangaScreen(
             is MangaScreenModel.Dialog.EditMangaInfo -> {
                 EditMangaDialog(
                     manga = dialog.manga,
+                    // KMK -->
+                    coverRatio = coverRatio,
+                    // KMK <--
                     onDismissRequest = screenModel::dismissDialog,
                     onPositiveClick = screenModel::updateMangaInfo,
                 )

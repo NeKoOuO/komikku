@@ -37,9 +37,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -160,7 +158,7 @@ open class BrowseSourceScreenModel(
                         toolbarQuery = query,
                     )
                 }
-            }
+            }.join()
 
             if (!basePreferences.incognitoMode().get()) {
                 sourcePreferences.lastUsedSource().set(source.id)
@@ -173,7 +171,13 @@ open class BrowseSourceScreenModel(
             if (savedSearchFilters != null) {
                 val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
                 if (savedSearch != null) {
-                    search(query = savedSearch.query, filters = savedSearch.filterList)
+                    search(
+                        query = savedSearch.query,
+                        filters = savedSearch.filterList,
+                        // KMK -->
+                        savedSearchId = savedSearchFilters,
+                        // KMK <--
+                    )
                 }
             } else if (jsonFilters != null) {
                 runCatching {
@@ -197,9 +201,9 @@ open class BrowseSourceScreenModel(
      * Flow of Pager flow tied to [State.listing]
      */
     private val hideInLibraryItems = sourcePreferences.hideInLibraryItems().get()
-    val mangaPagerFlowFlow = state.map { it.listing }
+    val mangaPagerFlow = state.map { it.listing }
         .distinctUntilChanged()
-        .map { listing ->
+        .flatMapLatest { listing ->
             Pager(PagingConfig(pageSize = 25)) {
                 // SY -->
                 createSourcePagingSource(listing.query ?: "", listing.filters)
@@ -216,9 +220,8 @@ open class BrowseSourceScreenModel(
                 }
                     .filter { !hideInLibraryItems || !it.value.first.favorite }
             }
-                .cachedIn(ioCoroutineScope)
         }
-        .stateIn(ioCoroutineScope, SharingStarted.Lazily, emptyFlow())
+        .cachedIn(ioCoroutineScope)
 
     fun getColumnsPreference(orientation: Int): GridCells {
         val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -269,7 +272,13 @@ open class BrowseSourceScreenModel(
         }
     }
 
-    fun search(query: String? = null, filters: FilterList? = null) {
+    fun search(
+        query: String? = null,
+        filters: FilterList? = null,
+        // KMK -->
+        savedSearchId: Long? = null,
+        // KMK <--
+    ) {
         // KMK -->
         val source = source
         // KMK <--
@@ -288,6 +297,9 @@ open class BrowseSourceScreenModel(
                 listing = input.copy(
                     query = query ?: input.query,
                     filters = filters ?: input.filters,
+                    // KMK -->
+                    savedSearchId = savedSearchId,
+                    // KMK <--
                 ),
                 toolbarQuery = query ?: input.query,
             )
@@ -457,6 +469,9 @@ open class BrowseSourceScreenModel(
         data class Search(
             override val query: String?,
             override val filters: FilterList,
+            // KMK -->
+            val savedSearchId: Long? = null,
+            // KMK <--
         ) : Listing(query = query, filters = filters)
 
         companion object {
@@ -540,6 +555,9 @@ open class BrowseSourceScreenModel(
                     listing = Listing.Search(
                         query = search.query,
                         filters = filters,
+                        // KMK -->
+                        savedSearchId = search.id,
+                        // KMK <--
                     ),
                     filters = filters,
                     toolbarQuery = search.query,

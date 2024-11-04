@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +38,8 @@ import coil3.transform.RoundedCornersTransformation
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
 import eu.kanade.tachiyomi.source.model.SManga
@@ -45,6 +48,7 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.widget.materialdialogs.binding
 import eu.kanade.tachiyomi.widget.materialdialogs.dismissDialog
 import eu.kanade.tachiyomi.widget.materialdialogs.setColors
+import eu.kanade.tachiyomi.widget.materialdialogs.setHint
 import eu.kanade.tachiyomi.widget.materialdialogs.setNegativeButton
 import eu.kanade.tachiyomi.widget.materialdialogs.setPositiveButton
 import eu.kanade.tachiyomi.widget.materialdialogs.setTextEdit
@@ -58,10 +62,15 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.source.local.isLocal
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Composable
 fun EditMangaDialog(
     manga: Manga,
+    // KMK -->
+    coverRatio: MutableFloatState,
+    // KMK <--
     onDismissRequest: () -> Unit,
     onPositiveClick: (
         title: String?,
@@ -80,7 +89,7 @@ fun EditMangaDialog(
     // KMK -->
     val colors = EditMangaDialogColors(
         textColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
-        textHighlightColor = MaterialTheme.colorScheme.outline.toArgb(),
+        textHighlightColor = MaterialTheme.colorScheme.inversePrimary.toArgb(),
         iconColor = MaterialTheme.colorScheme.primary.toArgb(),
         tagColor = MaterialTheme.colorScheme.outlineVariant.toArgb(),
         tagTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
@@ -145,6 +154,7 @@ fun EditMangaDialog(
                                     scope,
                                     // KMK -->
                                     colors,
+                                    coverRatio = coverRatio,
                                     // KMK <--
                                 )
                             }
@@ -178,9 +188,16 @@ private fun onViewCreated(
     scope: CoroutineScope,
     // KMK -->
     colors: EditMangaDialogColors,
+    coverRatio: MutableFloatState,
     // KMK <--
 ) {
-    loadCover(manga, binding)
+    loadCover(
+        manga,
+        binding,
+        // KMK -->
+        coverRatio,
+        // KMK <--
+    )
 
     // KMK -->
     // val statusAdapter: ArrayAdapter<String> = ArrayAdapter(
@@ -344,9 +361,25 @@ private fun resetTags(
     }
 }
 
-private fun loadCover(manga: Manga, binding: EditMangaDialogBinding) {
-    binding.mangaCover.load(manga) {
-        transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
+private fun loadCover(
+    manga: Manga,
+    binding: EditMangaDialogBinding,
+    // KMK -->
+    coverRatio: MutableFloatState,
+    // KMK <--
+) {
+    // KMK -->
+    if (Injekt.get<UiPreferences>().usePanoramaCoverAlways().get() && coverRatio.floatValue <= RatioSwitchToPanorama) {
+        binding.mangaCover.visibility = View.GONE
+        binding.mangaCoverPanorama.visibility = View.VISIBLE
+        binding.mangaCoverPanorama.load(manga) {
+            transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
+        }
+    } else {
+        // KMK <--
+        binding.mangaCover.load(manga) {
+            transformations(RoundedCornersTransformation(4.dpToPx.toFloat()))
+        }
     }
 }
 
@@ -404,7 +437,7 @@ private fun ChipGroup.setChips(
     }
 
     val addTagChip = Chip(context).apply {
-        text = SYMR.strings.add_tag.getString(context)
+        text = SYMR.strings.add_tags.getString(context)
         // KMK -->
         setTextColor(colors.tagTextColor)
         // KMK <--
@@ -427,12 +460,15 @@ private fun ChipGroup.setChips(
 
             val builder = MaterialAlertDialogBuilder(context)
             val binding = builder.binding(context)
-                .setTitle(SYMR.strings.add_tag.getString(context))
+                .setTitle(SYMR.strings.add_tags.getString(context))
+                .setHint(SYMR.strings.multi_tags_comma_separated.getString(context))
                 .setPositiveButton(MR.strings.action_ok.getString(context)) {
                     dialog?.dismissDialog()
                     // KMK <--
-                    val newTag = it.trimOrNull()
-                    if (newTag != null) setChips(items + listOfNotNull(newTag), scope, colors)
+                    val newTags = it.trimOrNull()
+                    newTags?.let { tags ->
+                        setChips(items + tags.split(",").mapNotNull { tag -> tag.trimOrNull() }, scope, colors)
+                    }
                     // KMK -->
                 }
                 .setNegativeButton(MR.strings.action_cancel.getString(context)) {
@@ -451,7 +487,7 @@ private fun ChipGroup.setChips(
 }
 
 private fun ChipGroup.getTextStrings(): List<String> = children.mapNotNull {
-    if (it is Chip && !it.text.toString().contains(context.stringResource(SYMR.strings.add_tag), ignoreCase = true)) {
+    if (it is Chip && !it.text.toString().contains(context.stringResource(SYMR.strings.add_tags), ignoreCase = true)) {
         it.text.toString()
     } else {
         null

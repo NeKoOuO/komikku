@@ -16,8 +16,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.components.BrowseSourceFloatingActionButton
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.presentation.components.SelectionToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.AllowDuplicateDialog
@@ -76,16 +76,18 @@ data class SourceSearchScreen(
             topBar = { scrollBehavior ->
                 // KMK -->
                 if (bulkFavoriteState.selectionMode) {
-                    SelectionToolbar(
+                    BulkSelectionToolbar(
                         selectedCount = bulkFavoriteState.selection.size,
+                        isRunning = bulkFavoriteState.isRunning,
                         onClickClearSelection = bulkFavoriteScreenModel::toggleSelectionMode,
-                        onChangeCategoryClicked = bulkFavoriteScreenModel::addFavorite,
+                        onChangeCategoryClick = bulkFavoriteScreenModel::addFavorite,
                         onSelectAll = {
                             state.mangaDisplayingList.forEach { manga ->
-                                if (!bulkFavoriteState.selection.contains(manga)) {
-                                    bulkFavoriteScreenModel.select(manga)
-                                }
+                                bulkFavoriteScreenModel.select(manga)
                             }
+                        },
+                        onReverseSelection = {
+                            bulkFavoriteScreenModel.reverseSelection(state.mangaDisplayingList.toList())
                         },
                     )
                 } else {
@@ -100,7 +102,10 @@ data class SourceSearchScreen(
                         actions = {
                             AppBarActions(
                                 actions = persistentListOf(
-                                    bulkSelectionButton(bulkFavoriteScreenModel::toggleSelectionMode),
+                                    bulkSelectionButton(
+                                        isRunning = bulkFavoriteState.isRunning,
+                                        toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
+                                    ),
                                 ),
                             )
                         },
@@ -118,7 +123,6 @@ data class SourceSearchScreen(
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->
-            val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
             val openMigrateDialog: (Manga) -> Unit = {
                 // SY -->
                 navigator.items
@@ -130,7 +134,7 @@ data class SourceSearchScreen(
             }
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = pagingFlow.collectAsLazyPagingItems(),
+                mangaList = screenModel.mangaPagerFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 // SY -->
                 ehentaiBrowseDisplayMode = screenModel.ehentaiBrowseDisplayMode,
